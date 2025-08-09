@@ -15,7 +15,7 @@ const Testimonials = () => {
     <section id="testimonials" className="bg-muted">
       <div className="container py-16">
         <header className="mb-8 text-center">
-          <h2 className="text-3xl font-bold">What Our Users Say</h2>
+          <h2 className="text-3xl font-bold">Loved by Creators and Marketers</h2>
           <p className="text-muted-foreground mt-2">Loved by creators across platforms.</p>
         </header>
         <div className="grid md:grid-cols-3 gap-6">

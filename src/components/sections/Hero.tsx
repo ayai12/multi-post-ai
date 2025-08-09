@@ -7,14 +7,14 @@ const Hero = () => {
       <div className="container grid md:grid-cols-2 gap-10 items-center py-14">
         <div className="space-y-6 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
-            Turn One Piece of Content Into 10x More
+            AI Content Repurposing Tool — Turn Blogs into Social Posts
           </h1>
           <p className="text-lg text-muted-foreground max-w-prose">
-            Paste your content and instantly get ready-to-use social posts, summaries, and more.
+            For bloggers, YouTubers, podcasters, and marketers—repurpose content into multi-platform posts in seconds.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button variant="cta" size="xl" asChild>
-              <a href="#toolUI">Get Started Free</a>
+              <a href="#toolUI">Repurpose Content Now</a>
             </Button>
             <Button variant="outline" size="lg" asChild>
               <a href="#pricing">View Pricing</a>

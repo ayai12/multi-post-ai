@@ -12,7 +12,7 @@ const Pricing = () => {
     <section id="pricing" className="bg-background">
       <div className="container py-16">
         <header className="mb-8 text-center">
-          <h2 className="text-3xl font-bold">Pricing Plans</h2>
+          <h2 className="text-3xl font-bold">AI Content Repurposing Pricing</h2>
           <p className="text-muted-foreground mt-2">Simple pricing that scales with you.</p>
         </header>
         <div className="grid md:grid-cols-3 gap-6">

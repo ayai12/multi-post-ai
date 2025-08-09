@@ -87,7 +87,7 @@ const ToolUI = () => {
       <div className="container py-14">
         <Card className="shadow-[var(--shadow-soft)]">
           <CardHeader>
-            <CardTitle className="text-2xl">Repurpose in 3 easy steps</CardTitle>
+            <CardTitle className="text-2xl">Repurpose Content in 3 Easy Steps (AI-Powered)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-8">
             {/* Step 1 */}
@@ -151,7 +151,7 @@ const ToolUI = () => {
 
             {/* Outputs */}
             <div className="space-y-3">
-              <h3 className="font-semibold">Outputs</h3>
+              <h3 className="font-semibold">Repurposed Outputs</h3>
               <ScrollArea className="w-full whitespace-nowrap rounded-md">
                 <div className="flex gap-4 pb-2 overflow-x-auto">
                   {(outputs || placeholderOutputs).map((out, i) => (
