@@ -15,7 +15,7 @@ const buttonVariants = cva(
         outline:
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "bg-secondary text-secondary-foreground hover:bg-[hsl(var(--secondary-hover))]",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         cta: "bg-primary text-primary-foreground uppercase tracking-wide font-semibold shadow-[var(--shadow-elegant)] hover:bg-[hsl(var(--primary-hover))] will-change-transform transform-gpu transition-all duration-200 hover:scale-[1.02] active:scale-[0.99]",
