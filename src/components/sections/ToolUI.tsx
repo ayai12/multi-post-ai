@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Twitter, Instagram as InstagramIcon, Linkedin as LinkedinIcon, Quote as QuoteIcon, List as ListIcon, Crown, Mail, Image as ImageIcon, Layers } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,13 +10,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/hooks/use-toast";
+import { useAction } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { useEntitlements } from "@/hooks/useEntitlements";
+import { useAuth } from "@clerk/react-router";
+
+// If your Clerk plan slug is not "pro", update this to match your dashboard plan slug
+const PRO_PLAN_SLUG = "pro" as const;
 
 const formatOptions = [
-  { key: "tweet", label: "Tweet Thread" },
-  { key: "instagram", label: "Instagram Caption" },
-  { key: "linkedin", label: "LinkedIn Post" },
-  { key: "summary", label: "Summary" },
-  { key: "quotes", label: "Quote Cards" },
+  // Free formats
+  { key: "single_tweet", label: "Single Tweet", premium: false },
+  { key: "tweet_thread", label: "Tweet Thread", premium: false },
+  { key: "summary", label: "Summary", premium: false },
+  { key: "linkedin", label: "LinkedIn Post", premium: false },
+  // Premium formats
+  { key: "viral_thread", label: "Twitter Viral Thread", premium: true },
+  { key: "quote_cards", label: "Twitter Quote Cards", premium: true },
+  { key: "linkedin_carousel", label: "LinkedIn Carousel Post", premium: true },
+  { key: "email_newsletter", label: "Email Newsletter", premium: true },
 ] as const;
 
 type FormatKey = typeof formatOptions[number]["key"];
@@ -22,47 +36,150 @@ type FormatKey = typeof formatOptions[number]["key"];
 type Output = { title: string; body: string };
 
 const ToolUI = () => {
+  const {
+    availableFormats,
+    canSelectMultipleFormats,
+    canUseFormat,
+    isPremiumFormat,
+    canAccessPremiumFormats,
+  } = useEntitlements();
+  const { has, isLoaded: authLoaded } = useAuth();
   const [input, setInput] = useState("");
   const [selected, setSelected] = useState<Record<FormatKey, boolean>>({
-    tweet: true,
-    instagram: false,
-    linkedin: false,
+    single_tweet: true,
+    tweet_thread: false,
     summary: true,
-    quotes: false,
+    linkedin: false,
+    viral_thread: false,
+    quote_cards: false,
+    linkedin_carousel: false,
+    email_newsletter: false,
   });
   const [tone, setTone] = useState("Professional");
   const [length, setLength] = useState<number[]>([3]);
   const [outputs, setOutputs] = useState<Output[] | null>(null);
+  const [expanded, setExpanded] = useState<Record<number, boolean>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const outputsRef = useRef<HTMLDivElement | null>(null);
+  const STORAGE_KEY = "toolUIStateV1";
+
+  // Load persisted state on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as Partial<{
+        input: string;
+        selected: Record<FormatKey, boolean>;
+        tone: string;
+        length: number[];
+      }>;
+      if (typeof saved.input === "string") setInput(saved.input);
+      if (saved.selected && typeof saved.selected === "object") setSelected((s) => ({ ...s, ...saved.selected }));
+      if (typeof saved.tone === "string") setTone(saved.tone);
+      if (Array.isArray(saved.length) && saved.length.length > 0) setLength(saved.length as number[]);
+    } catch {}
+  }, []);
+
+  // Persist state on change
+  useEffect(() => {
+    try {
+      const toSave = JSON.stringify({ input, selected, tone, length });
+      localStorage.setItem(STORAGE_KEY, toSave);
+    } catch {}
+  }, [input, selected, tone, length]);
 
   const selectedFormats = useMemo(() =>
     formatOptions.filter(f => selected[f.key]).map(f => f.key), [selected]
   );
 
-  const placeholderOutputs: Output[] = [
-    { title: "Tweet Thread", body: "Lorem ipsum dolor sit amet…" },
-    { title: "Summary", body: "Lorem ipsum dolor sit amet…" },
-  ];
+  const runGenerateContent = useAction(
+    api["Functions/generateContent"].generateContent
+  );
 
-  const generateOutputs = () => {
-    const base = input.trim() || "Your content goes here. Paste or upload to see richer examples.";
+  // Simple monthly usage tracking for Free users (client-side)
+  const monthKey = useMemo(() => {
+    const d = new Date();
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  }, []);
+
+  const getUsage = () => {
+    try {
+      const raw = localStorage.getItem("usageCounts");
+      const all = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+      return all[monthKey] || 0;
+    } catch {
+      return 0;
+    }
+  };
+
+  const incUsage = () => {
+    try {
+      const raw = localStorage.getItem("usageCounts");
+      const all = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+      all[monthKey] = (all[monthKey] || 0) + 1;
+      localStorage.setItem("usageCounts", JSON.stringify(all));
+    } catch {}
+  };
+
+  const generateOutputs = async () => {
+    if (!authLoaded) {
+      toast({ title: "Please wait", description: "Loading your billing status..." });
+      return;
+    }
+    if (!input.trim()) {
+      toast({ title: "Error", description: "Please provide input content." });
+      return;
+    }
+
     const len = Math.max(1, Math.min(5, length[0]));
+    const formats = selectedFormats;
 
-    const make = (title: string) => ({
-      title,
-      body: `${title} (Tone: ${tone}, Length: ${len})\n\n` +
-        base.slice(0, Math.min(base.length, 120 + len * 40)) +
-        (base.length > 160 ? "…" : ""),
-    });
+    // Determine Pro via Clerk has(): prefer feature checks, but also check plan slug if configured
+    const isPro = (typeof has === "function") && (
+      has({ feature: "unlimited_repurposes_month" }) ||
+      has({ feature: "access_to_all_formats" }) ||
+      has({ plan: PRO_PLAN_SLUG as any })
+    );
 
-    const outs: Output[] = [];
-    if (selected.tweet) outs.push(make("Tweet Thread"));
-    if (selected.instagram) outs.push(make("Instagram Caption"));
-    if (selected.linkedin) outs.push(make("LinkedIn Post"));
-    if (selected.summary) outs.push(make("Summary"));
-    if (selected.quotes) outs.push(make("Quote Cards"));
+    // Enforce monthly limit for Free users (10/month)
+    if (!isPro) {
+      const count = getUsage();
+      if (count >= 10) {
+        toast({ title: "Monthly limit reached", description: "You have reached 10 repurposes this month. Upgrade to Pro for unlimited." });
+        return;
+      }
+    }
 
-    setOutputs(outs.length ? outs : placeholderOutputs);
-    toast({ title: "Repurposed!", description: "Preview outputs are ready." });
+    // Enforce one-format-per-request when not allowed
+    if (!canSelectMultipleFormats && formats.length > 1) {
+      toast({ title: "Upgrade required", description: "Your plan allows 1 format per request." });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const result = await runGenerateContent({
+        content: input,
+        tone,
+        length: len,
+        formats,
+      });
+
+      setOutputs(result);
+      // Record usage for Free users only after success
+      if (!isPro) incUsage();
+      toast({ title: "Repurposed!", description: "Preview outputs are ready." });
+      // Smooth scroll to outputs
+      requestAnimationFrame(() => {
+        outputsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    } catch (error) {
+      console.error("Error generating outputs:", error);
+      toast({ title: "Error", description: "Failed to generate outputs. Please try again." });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onCopy = async (text: string) => {
@@ -80,6 +197,203 @@ const ToolUI = () => {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+  };
+
+  // Rendering helpers for prettier, format-aware layouts
+  const detectKeyFromTitle = (title: string): FormatKey | null => {
+    const t = title.toLowerCase();
+    if (t.includes("single tweet")) return "single_tweet";
+    if (t.includes("tweet thread")) return "tweet_thread";
+    if (t.includes("viral thread")) return "viral_thread";
+    if (t.includes("quote cards")) return "quote_cards";
+    if (t.includes("linkedin carousel")) return "linkedin_carousel";
+    if (t.includes("email newsletter")) return "email_newsletter";
+    if (t.includes("linkedin")) return "linkedin";
+    if (t.includes("summary")) return "summary";
+    return null;
+  };
+
+  const formatIcon = (key: FormatKey | null) => {
+    switch (key) {
+      case "single_tweet":
+        return <Twitter className="h-4 w-4 text-sky-500" />;
+      case "tweet_thread":
+        return <Twitter className="h-4 w-4 text-sky-600" />;
+      case "viral_thread":
+        return <Twitter className="h-4 w-4 text-orange-500" />;
+      case "quote_cards":
+        return <QuoteIcon className="h-4 w-4 text-amber-600" />;
+      case "linkedin":
+        return <LinkedinIcon className="h-4 w-4 text-blue-600" />;
+      case "linkedin_carousel":
+        return <Layers className="h-4 w-4 text-blue-700" />;
+      case "email_newsletter":
+        return <Mail className="h-4 w-4 text-purple-600" />;
+      case "summary":
+        return <ListIcon className="h-4 w-4 text-emerald-600" />;
+      default:
+        return null;
+    }
+  };
+
+  const accentBorderClass = (key: FormatKey | null) => {
+    switch (key) {
+      case "single_tweet":
+        return "border-t-4 border-sky-400";
+      case "tweet_thread":
+        return "border-t-4 border-sky-500";
+      case "viral_thread":
+        return "border-t-4 border-orange-400";
+      case "quote_cards":
+        return "border-t-4 border-amber-500";
+      case "linkedin":
+        return "border-t-4 border-blue-500";
+      case "linkedin_carousel":
+        return "border-t-4 border-blue-600";
+      case "email_newsletter":
+        return "border-t-4 border-purple-500";
+      case "summary":
+        return "border-t-4 border-emerald-500";
+      default:
+        return "";
+    }
+  };
+
+  const renderBody = (title: string, body: string, isOpen: boolean) => {
+    const key = detectKeyFromTitle(title);
+    const overflow = body.length > 400;
+    const shortText = body.slice(0, 400);
+
+    if (key === "single_tweet") {
+      return (
+        <div className="rounded-md border border-border bg-background px-3 py-2 text-sm">
+          {body}
+        </div>
+      );
+    }
+
+    if (key === "tweet_thread" || key === "viral_thread") {
+      // split into tweets by blank lines or numbered prefixes
+      const parts = body
+        .split(/\n\n+/)
+        .flatMap((p) => p.split(/(?=\n\d+\/\s)/))
+        .map((p) => p.replace(/^\s*\d+\/\s*/, "").trim())
+        .filter(Boolean);
+      const visible = !isOpen && parts.length > 3 ? parts.slice(0, 3) : parts;
+      return (
+        <div className="space-y-2">
+          {visible.map((t, idx) => (
+            <div key={idx} className="rounded-md border border-border bg-background px-3 py-2 text-sm">
+              {t}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (key === "quote_cards") {
+      const quotes = body.split(/\n\n+/).map((q) => q.replace(/^\s*[""\']?|[""\']?\s*$/g, "").trim()).filter(Boolean);
+      const visible = !isOpen && quotes.length > 3 ? quotes.slice(0, 3) : quotes;
+      return (
+        <div className="space-y-3">
+          {visible.map((q, i) => (
+            <blockquote key={i} className="border-l-2 pl-3 italic text-sm text-muted-foreground">"{q}"</blockquote>
+          ))}
+        </div>
+      );
+    }
+
+
+    if (key === "linkedin_carousel") {
+      const slides = body.split(/\n\n+/).filter(Boolean);
+      const visible = !isOpen && slides.length > 3 ? slides.slice(0, 3) : slides;
+      return (
+        <div className="space-y-2">
+          {visible.map((slide, i) => (
+            <div key={i} className="rounded-md border border-border bg-blue-50 px-3 py-2 text-sm">
+              <div className="font-medium text-xs text-blue-600 mb-1">Slide {i + 1}</div>
+              {slide}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (key === "email_newsletter") {
+      const sections = body.split(/\n\n+/).filter(Boolean);
+      const visible = !isOpen && sections.length > 2 ? sections.slice(0, 2) : sections;
+      return (
+        <div className="space-y-2">
+          {visible.map((section, i) => (
+            <div key={i} className="rounded-md border border-border bg-purple-50 px-3 py-2 text-sm">
+              {section}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (key === "summary") {
+      const items = body
+        .split(/\n+/)
+        .map((l) => l.replace(/^\s*[•\-]\s*/, "").trim())
+        .filter(Boolean);
+      const visible = !isOpen && items.length > 5 ? items.slice(0, 5) : items;
+      return (
+        <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+          {visible.map((it, i) => (
+            <li key={i}>{it}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    // linkedin or default
+    return (
+      <div className={`text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed ${!isOpen && overflow ? "line-clamp-6 max-h-56 overflow-hidden" : ""}`}>
+        {isOpen || !overflow ? body : shortText + "…"}
+      </div>
+    );
+  };
+
+  // Determine if a card needs a Show more button based on format-specific size
+  const hasOverflow = (title: string, body: string): boolean => {
+    const key = detectKeyFromTitle(title);
+    if (key === "single_tweet") {
+      return body.length > 280;
+    }
+    if (key === "tweet_thread" || key === "viral_thread") {
+      const parts = body
+        .split(/\n\n+/)
+        .flatMap((p) => p.split(/(?=\n\d+\/\s)/))
+        .map((p) => p.replace(/^\s*\d+\/\s*/, "").trim())
+        .filter(Boolean);
+      return parts.length > 3;
+    }
+    if (key === "summary") {
+      const items = body
+        .split(/\n+/)
+        .map((l) => l.replace(/^\s*[•\-]\s*/, "").trim())
+        .filter(Boolean);
+      return items.length > 5 || body.length > 400;
+    }
+    if (key === "quote_cards") {
+      const quotes = body
+        .split(/\n\n+/)
+        .map((q) => q.replace(/^\s*[""\']?|[""\']?\s*$/g, "").trim())
+        .filter(Boolean);
+      return quotes.length > 3;
+    }
+    if (key === "linkedin_carousel") {
+      const slides = body.split(/\n\n+/).filter(Boolean);
+      return slides.length > 3;
+    }
+    if (key === "email_newsletter") {
+      const sections = body.split(/\n\n+/).filter(Boolean);
+      return sections.length > 2;
+    }
+    // linkedin/default
+    return body.length > 400;
   };
 
   return (
@@ -102,22 +416,55 @@ const ToolUI = () => {
               <div>
                 <Button variant="secondary" type="button">Upload File</Button>
               </div>
+              {/* Hints and upgrade CTA */}
+              {!canAccessPremiumFormats && (
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>• Free plan: Select 1 format per request</p>
+                  <p>• Premium formats are Pro-only</p>
+                  <div>
+                    <Button asChild variant="link" className="px-0 text-amber-600">
+                      <a href="/pricing" target="_blank" rel="noreferrer">Upgrade to Pro</a>
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Step 2 */}
             <div className="space-y-3">
               <h3 className="font-semibold">Step 2 — Select Output Formats</h3>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {formatOptions.map((opt) => (
-                  <label key={opt.key} className="flex items-center gap-2 rounded-md border border-border px-3 py-2 hover:bg-accent cursor-pointer">
-                    <Checkbox
-                      checked={selected[opt.key]}
-                      onCheckedChange={(v) => setSelected((s) => ({ ...s, [opt.key]: Boolean(v) }))}
-                      id={`fmt-${opt.key}`}
-                    />
-                    <Label htmlFor={`fmt-${opt.key}`}>{opt.label}</Label>
-                  </label>
-                ))}
+                {formatOptions.map((opt) => {
+                  // Don't restrict until billing/auth is loaded
+                  const isAllowed = authLoaded ? canUseFormat(opt.key as FormatKey) : true;
+                  const selectedCount = Object.values(selected).filter(Boolean).length;
+                  const disabled = !isAllowed;
+                  return (
+                    <label key={opt.key} className={`flex items-center gap-2 rounded-md border border-border px-3 py-2 ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-accent cursor-pointer'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200' : ''}`}>
+                      <Checkbox
+                        checked={selected[opt.key]}
+                        onCheckedChange={(v) => {
+                          const next = Boolean(v);
+                          if (disabled && next) {
+                            toast({ title: 'Upgrade required', description: 'This is a Pro format.' });
+                            return;
+                          }
+                          if (next && !canSelectMultipleFormats && !selected[opt.key] && selectedCount >= 1) {
+                            toast({ title: 'Limit reached', description: 'Your plan allows 1 format per request.' });
+                            return;
+                          }
+                          setSelected((s) => ({ ...s, [opt.key]: next }));
+                        }}
+                        id={`fmt-${opt.key}`}
+                        disabled={disabled}
+                      />
+                      <Label htmlFor={`fmt-${opt.key}`} className={isPremiumFormat(opt.key as FormatKey) ? 'text-amber-700' : ''}>{opt.label}</Label>
+                      {isPremiumFormat(opt.key as FormatKey) && (
+                        <Crown className="h-3 w-3 text-amber-500 ml-auto" />
+                      )}
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
@@ -146,33 +493,53 @@ const ToolUI = () => {
             </div>
 
             <div>
-              <Button variant="cta" size="lg" onClick={generateOutputs}>Repurpose My Content</Button>
+              <Button variant="cta" size="lg" onClick={generateOutputs} disabled={isLoading}>
+                {isLoading ? "Generating…" : "Repurpose My Content"}
+              </Button>
             </div>
 
             {/* Outputs */}
-            <div className="space-y-3">
+            {outputs && outputs.length > 0 && (
+              <div className="space-y-4" ref={outputsRef} id="outputs">
               <h3 className="font-semibold">Repurposed Outputs</h3>
-              <ScrollArea className="w-full whitespace-nowrap rounded-md">
-                <div className="flex gap-4 pb-2 overflow-x-auto">
-                  {(outputs || placeholderOutputs).map((out, i) => (
-                    <Card key={i} className="min-w-[280px] max-w-[360px] flex flex-col">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {outputs.map((out, i) => {
+                    const isOpen = !!expanded[i];
+                    const key = detectKeyFromTitle(out.title);
+                    const showMore = hasOverflow(out.title, out.body);
+                    return (
+                      <Card key={i} className={`flex flex-col hover:shadow-md transition-shadow ${accentBorderClass(key)}`}>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-base">{out.title}</CardTitle>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              {formatIcon(key)}
+                              <CardTitle className="text-base truncate">{out.title}</CardTitle>
+                            </div>
+                            <Badge variant="secondary">AI</Badge>
+                          </div>
                       </CardHeader>
                       <CardContent className="flex-1 flex flex-col">
-                        <pre className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                          {out.body}
-                        </pre>
-                        <div className="mt-4 flex gap-2">
+                          {renderBody(out.title, out.body, isOpen)}
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {showMore && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setExpanded((s) => ({ ...s, [i]: !isOpen }))}
+                              >
+                                {isOpen ? "Show less" : "Show more"}
+                              </Button>
+                            )}
                           <Button variant="secondary" size="sm" onClick={() => onCopy(out.body)}>Copy</Button>
                           <Button variant="outline" size="sm" onClick={() => onDownload(out.title, out.body)}>Download .txt</Button>
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                    );
+                  })}
                 </div>
-              </ScrollArea>
             </div>
+            )}
           </CardContent>
         </Card>
       </div>

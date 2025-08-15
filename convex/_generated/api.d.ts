@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as Functions_generateContent from "../Functions/generateContent.js";
 import type * as messages from "../messages.js";
 
 /**
@@ -24,6 +25,7 @@ import type * as messages from "../messages.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "Functions/generateContent": typeof Functions_generateContent;
   messages: typeof messages;
 }>;
 export declare const api: FilterApi<
