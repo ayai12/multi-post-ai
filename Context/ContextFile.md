@@ -74,35 +74,69 @@
 
 ## Subscription Plans & Features
 
-### **Pro Plan**
-1. **Unlimited repurposes/month**  
-   - **Key:** `unlimited_repurposes_month`  
-   - **Description:** *(User gets Unlimted repurporses a month )*  
+### Free Plan
+- Price: $0 (Always free)
+- Features:
+  1. 5 repurposes per month  
+     - Key: `monthly_repurposes_limit_5`  
+     - Description: User can repurpose up to 5 times per month.
+  2. Only access to one format per request  
+     - Key: `only_access_to_one_format_per_request`  
+     - Description: User can select only one format per repurpose request.
+  3. Limited access to formats  
+     - Key: `limited_access_to_formats`  
+     - Description: Access limited to core formats only. Supported formats: Tweets + Instagram Captions.
+  4. Basic editing (trim + shorten)  
+     - Key: `basic_editing`  
+     - Description: Basic edit tools available.
+  5. Email support only  
+     - Key: `email_support_only`  
+     - Description: Support via email.
 
-2. **Access to all formats per request**  
-   - **Key:** `access_to_all_formats_per_request`  
-   - **Description:** *(User gets acces to all formats in a request.Example user can select all the formats in one repurporse request )*  
+---
 
-3. **Access to all formats**  
-   - **Key:** `access_to_all_formats`  
-   - **Description:** *(User gets access to all the formats)*  
+### Pro Plan
+- Price: $5 / Month
+- Features:
+  1. Unlimited repurposes/month  
+     - Key: `unlimited_repurposes_month`  
+     - Description: No monthly cap on repurposes.
+  2. Access to all formats per request  
+     - Key: `access_to_all_formats_per_request`  
+     - Description: User can select all formats within a single repurpose request.
+  3. Access to all formats  
+     - Key: `access_to_all_formats`  
+     - Description: Full access to all available formats.
+  4. Basic editing (trim + shorten)  
+     - Key: `basic_editing`  
+     - Description: Basic edit tools available.
+  5. Email support only  
+     - Key: `email_support_only`  
+     - Description: Support via email.
 
 ---
 
-### **Free Plan**
-1. **10 AI repurposes a month**  
-   - **Key:** `10_ai_reproposes_a_month`  
-   - **Description:** *(User gets 10 repurporses a month)*  
-
-2. **Only access to one format per request**  
-   - **Key:** `only_access_to_one_format_per_request`  
-   - **Description:** *(User gets acces to only one format in a request.Example user can select only one format in one repurporse request)*  
-
-3. **Limited access to formats**  
-   - **Key:** `limited_access_to_formats`  
-   - **Description:** *(User gets access to all the formats)*  
-
----
+### Business Plan
+- Price: $15 / Month
+- Features:
+  1. Unlimited repurposes/month  
+     - Key: `unlimited_repurposes_month`  
+     - Description: No monthly cap on repurposes.
+  2. Access to all formats per request  
+     - Key: `access_to_all_formats_per_request`  
+     - Description: User can select all formats within a single repurpose request.
+  3. Access to all formats  
+     - Key: `access_to_all_formats`  
+     - Description: Full access to all available formats.
+  4. Basic editing (trim + shorten)  
+     - Key: `basic_editing`  
+     - Description: Basic edit tools available.
+  5. Email support only  
+     - Key: `email_support_only`  
+     - Description: Support via email.
+  6. Early access to new formats/features  
+     - Key: `early_access`  
+     - Description: Early access to new features and formats.
 
 ## Format Categories
 
