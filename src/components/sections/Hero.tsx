@@ -4,30 +4,40 @@ import heroImage from "@/assets/hero-repurposer.jpg";
 const Hero = () => {
   return (
     <section id="hero" className="pt-20 bg-background">
-      <div className="container grid md:grid-cols-2 gap-10 items-center py-14">
-        <div className="space-y-6 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight">
-            AI Content Repurposing Tool — Turn Blogs into Social Posts
+      <div className="container grid lg:grid-cols-2 gap-8 lg:gap-12 items-center py-12 lg:py-16">
+        <div className="space-y-6 lg:space-y-8 animate-fade-in text-center lg:text-left">
+          <div className="mb-4">
+            <span className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
+              Built by a Solo Creator, For Creators
+            </span>
+          </div>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-tight">
+            Stop Spending 80% of Your Time Repurposing Content
           </h1>
-          <p className="text-lg text-muted-foreground max-w-prose">
-            For bloggers, YouTubers, podcasters, and marketers—repurpose content into multi-platform posts in seconds.
+          <p className="text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+            Turn one blog post into 10 social media posts in under 2 minutes. 
+            Built by a solo developer who understands the creator struggle—because I live it too.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Button variant="cta" size="xl" asChild>
-              <a href="#toolUI">Repurpose Content Now</a>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <Button variant="cta" size="xl" asChild className="text-base px-8 py-4">
+              <a href="#toolUI">Try It Free (No Signup Required)</a>
             </Button>
-            <Button variant="outline" size="lg" asChild>
-              <a href="#pricing">View Pricing</a>
+            <Button variant="outline" size="lg" asChild className="text-base px-6 py-3">
+              <a href="https://x.com/ReinwatashiDev" target="_blank" rel="noopener noreferrer">Follow My Journey</a>
             </Button>
           </div>
         </div>
-        <div className="relative">
-          <img
-            src={heroImage}
-            alt="AI Content Repurposer dashboard preview showing multiple social outputs"
-            loading="lazy"
-            className="w-full rounded-lg shadow-[var(--shadow-soft)] animate-float"
-          />
+        <div className="relative order-first lg:order-last">
+          <div className="relative bg-gradient-to-br from-primary/5 to-secondary/5 rounded-2xl p-4 lg:p-6">
+            <img
+              src={heroImage}
+              alt="AI Content Repurposer dashboard preview showing multiple social outputs"
+              loading="lazy"
+              className="w-full rounded-xl shadow-2xl animate-float"
+            />
+            <div className="absolute -top-2 -right-2 w-4 h-4 bg-primary rounded-full animate-pulse"></div>
+            <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-secondary/20 rounded-full"></div>
+          </div>
         </div>
       </div>
     </section>

@@ -138,6 +138,25 @@
      - Key: `early_access`  
      - Description: Early access to new features and formats.
 
+---
+
+## Input & Upload Limits
+
+- **Free**
+  - Input size: up to 2,000 words per request
+  - Upload size: up to 1 MB per file (.txt, .md)
+  - Formats: 1 format per request
+  - Quota: 5 repurposes/month (local enforcement)
+
+- **Pro / Business**
+  - Input size: up to 10,000 words per request
+  - Upload size: up to 5 MB per file (.txt, .md)
+  - Formats: multiple formats per request (all formats unlocked)
+  - Quota: Unlimited
+
+Notes:
+- These limits are currently enforced client-side for UX. For production-grade anti-bypass, enforce on the server (e.g., Convex + Clerk).
+
 ## Format Categories
 
 ### Free Formats

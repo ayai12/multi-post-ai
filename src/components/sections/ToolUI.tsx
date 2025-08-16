@@ -7,18 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useEntitlements } from "@/hooks/useEntitlements";
 import { useAuth } from "@clerk/react-router";
+import { useClerk } from "@clerk/react-router";
 
 // If your Clerk plan slug is not "pro", update this to match your dashboard plan slug
 const PRO_PLAN_SLUG = "pro" as const;
+
+// Local enforcement limits (client-side)
+const FREE_MAX_WORDS = 2000;
+const PRO_MAX_WORDS = 10000;
+const FREE_MAX_FILE_MB = 1; // ~1 MB
+const PRO_MAX_FILE_MB = 5;  // ~5 MB
 
 const formatOptions = [
   // Free formats
@@ -62,9 +69,29 @@ const ToolUI = () => {
   const [length, setLength] = useState<number[]>([3]);
   const [outputs, setOutputs] = useState<Output[] | null>(null);
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const outputsRef = useRef<HTMLDivElement | null>(null);
   const STORAGE_KEY = "toolUIStateV1";
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const { redirectToSignIn, redirectToSignUp } = useClerk();
+
+  const scrollToPricing = () => {
+    const el = document.getElementById('pricing');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    else window.location.hash = '#pricing';
+  };
+
+  // Helpers
+  const countWords = (s: string) => (s.trim() ? s.trim().split(/\s+/).length : 0);
+  const bytesToMB = (bytes: number) => bytes / (1024 * 1024);
+  const clampToWords = (s: string, maxWords: number) => {
+    const parts = s.trim().split(/\s+/);
+    if (parts.length <= maxWords) return s.trim();
+    return parts.slice(0, maxWords).join(" ");
+  };
 
   // Load persisted state on mount
   useEffect(() => {
@@ -150,6 +177,13 @@ const ToolUI = () => {
       toast({ title: "Error", description: "Please provide input content." });
       return;
     }
+    // Enforce word limit per plan
+    const maxWordsAllowed = hasUnlimited ? PRO_MAX_WORDS : FREE_MAX_WORDS;
+    const currentWords = countWords(input);
+    if (currentWords > maxWordsAllowed) {
+      toast({ title: "Input too long", description: `Limit is ${maxWordsAllowed.toLocaleString()} words on your plan. Please shorten your input.` });
+      return;
+    }
 
     const len = Math.max(1, Math.min(5, length[0]));
     const formats = selectedFormats;
@@ -157,11 +191,13 @@ const ToolUI = () => {
     // Enforce monthly limit for non-unlimited users
     if (!hasUnlimited) {
       const count = getUsage();
+      // Require sign-up after the first free repurpose for anonymous users
+      if (!userId && count >= 1) {
+        setShowAuthModal(true);
+        return;
+      }
       if (count >= monthlyLimit) {
-        toast({
-          title: "Monthly limit reached",
-          description: `You've used ${count}/${monthlyLimit} repurposes this month. Visit Pricing to upgrade for unlimited.`,
-        });
+        setShowUpgradeModal(true);
         return;
       }
     }
@@ -185,6 +221,15 @@ const ToolUI = () => {
       // Record usage for limited plans after success
       if (!hasUnlimited) incUsage();
       if (!hasUnlimited) setUsageCount((c) => c + 1);
+      // After first successful free repurpose, request sign-up for anonymous users
+      if (!hasUnlimited) {
+        try {
+          const used = getUsage();
+          if (!userId && used === 1) {
+            setShowAuthModal(true);
+          }
+        } catch {}
+      }
       toast({ title: "Repurposed!", description: "Preview outputs are ready." });
       // Smooth scroll to outputs
       requestAnimationFrame(() => {
@@ -415,44 +460,106 @@ const ToolUI = () => {
   const limitReached = !hasUnlimited && usageCount >= monthlyLimit;
 
   return (
-    <section id="toolUI" className="bg-muted">
-      <div className="container py-14">
-        <Card className="shadow-[var(--shadow-soft)]">
-          <CardHeader>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <CardTitle className="text-2xl">Repurpose Content in 3 Easy Steps (AI-Powered)</CardTitle>
+    <section id="toolUI" className="bg-muted/30">
+      <div className="container py-16 lg:py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl lg:text-4xl font-bold mb-4">Repurpose Content in 3 Easy Steps</h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">AI-powered tool that understands platform differences</p>
+        </div>
+        <Card className="shadow-xl border-0 bg-background/95 backdrop-blur">
+          <CardHeader className="pb-8">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-3">
                 {hasUnlimited ? (
-                  <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-1">
+                  <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50/80 border border-emerald-200 rounded-lg px-3 py-2">
                     <Crown className="h-4 w-4 text-emerald-600" />
-                    <span>Unlimited on Pro</span>
+                    <span className="font-medium">Unlimited on Pro</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <div className="text-sm text-muted-foreground">
                       <span className="font-medium text-foreground">{usageCount}</span>
                       <span> / {monthlyLimit} used this month</span>
                     </div>
-                    <Button asChild size="sm" variant="outline">
-                      <a href="/pricing">Upgrade</a>
-                    </Button>
                   </div>
                 )}
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-8">
+          <CardContent className="space-y-10 lg:space-y-12 px-6 lg:px-8">
             {/* Step 1 */}
-            <div className="space-y-3">
-              <h3 className="font-semibold">Step 1 — Content Input</h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                  1
+                </div>
+                <h3 className="text-xl font-semibold">Content Input</h3>
+              </div>
               <Textarea
                 placeholder="Paste your blog post, transcript, or any long-form content here…"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="min-h-40"
+                className="min-h-48 text-base leading-relaxed resize-none focus:ring-2 focus:ring-primary/20 border-2 border-border/50 focus:border-primary/50 transition-colors"
               />
+              {/* Word count and limits */}
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>
+                  Words: {countWords(input)} / {hasUnlimited ? PRO_MAX_WORDS : FREE_MAX_WORDS}
+                </span>
+                <span>
+                  Max file size: {hasUnlimited ? PRO_MAX_FILE_MB : FREE_MAX_FILE_MB} MB
+                </span>
+              </div>
               <div>
-                <Button variant="secondary" type="button">Upload File</Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".txt,.md,text/plain,text/markdown"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const maxMb = hasUnlimited ? PRO_MAX_FILE_MB : FREE_MAX_FILE_MB;
+                    const sizeMb = bytesToMB(file.size);
+                    if (sizeMb > maxMb) {
+                      toast({ title: 'File too large', description: `Max ${maxMb} MB on your plan. Selected file is ${sizeMb.toFixed(2)} MB.` });
+                      e.currentTarget.value = '';
+                      return;
+                    }
+                    setUploadedFileName(file.name);
+                    const reader = new FileReader();
+                    reader.onerror = () => toast({ title: 'Upload failed', description: 'Could not read the selected file.' });
+                    reader.onload = () => {
+                      let text = String(reader.result || '').trim();
+                      if (!text) {
+                        toast({ title: 'Empty file', description: 'The uploaded file had no readable text.' });
+                        return;
+                      }
+                      // Enforce word limit on import (truncate if needed)
+                      const maxWords = hasUnlimited ? PRO_MAX_WORDS : FREE_MAX_WORDS;
+                      const merged = (prevInput: string) => (prevInput ? prevInput + '\n\n' + text : text);
+                      setInput((prev) => {
+                        const candidate = merged(prev);
+                        const words = countWords(candidate);
+                        if (words > maxWords) {
+                          const remaining = Math.max(0, maxWords - countWords(prev));
+                          const truncated = remaining > 0 ? (prev ? prev + '\n\n' + clampToWords(text, remaining) : clampToWords(text, remaining)) : prev;
+                          toast({ title: 'Input truncated', description: `Limited to ${maxWords.toLocaleString()} words on your plan.` });
+                          return truncated || prev;
+                        }
+                        toast({ title: 'File imported', description: `${file.name} added to input.` });
+                        return candidate;
+                      });
+                    };
+                    reader.readAsText(file);
+                    // Reset value so selecting the same file again re-triggers change
+                    e.currentTarget.value = '';
+                  }}
+                />
+                <Button variant="secondary" type="button" onClick={() => fileInputRef.current?.click()}>Upload File</Button>
+                {uploadedFileName && (
+                  <span className="ml-2 text-xs text-muted-foreground align-middle">{uploadedFileName} imported</span>
+                )}
               </div>
               {/* Hints and upgrade CTA */}
               {!canAccessPremiumFormats && (
@@ -460,9 +567,7 @@ const ToolUI = () => {
                   <p>• Free plan: Select 1 format per request</p>
                   <p>• Premium formats are Pro-only</p>
                   <div>
-                    <Button asChild variant="link" className="px-0 text-amber-600">
-                      <a href="/pricing" target="_blank" rel="noreferrer">Upgrade to Pro</a>
-                    </Button>
+                    <Button variant="link" className="px-0 text-amber-600" onClick={scrollToPricing}>Upgrade to Pro</Button>
                   </div>
                 </div>
               )}
@@ -474,9 +579,6 @@ const ToolUI = () => {
                       <Crown className="h-4 w-4 text-emerald-600" />
                       <span>Unlimited usage on Pro</span>
                     </div>
-                    <Button asChild size="sm" variant="outline">
-                      <a href="/pricing">Manage Plan</a>
-                    </Button>
                   </div>
                 ) : (
                   <div className="w-full">
@@ -487,9 +589,7 @@ const ToolUI = () => {
                     <Progress value={Math.min(100, Math.round((usageCount / monthlyLimit) * 100))} className="h-2" />
                     <div className="mt-2 flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">Free plan limit. Upgrade for unlimited.</span>
-                      <Button asChild size="sm" variant="outline">
-                        <a href="/pricing">Upgrade</a>
-                      </Button>
+                      <Button size="sm" variant="outline" onClick={scrollToPricing}>Upgrade</Button>
                     </div>
                   </div>
                 )}
@@ -497,15 +597,31 @@ const ToolUI = () => {
             </div>
 
             {/* Step 2 */}
-            <div className="space-y-3">
-              <h3 className="font-semibold">Step 2 — Select Output Formats</h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                  2
+                </div>
+                <h3 className="text-xl font-semibold">Select Output Formats</h3>
+              </div>
               {!canSelectMultipleFormats && (
                 <div className="text-xs text-muted-foreground">
                   Free plan allows <span className="font-medium text-foreground">1 format per request</span>.{' '}
-                  <a href="/pricing" className="text-amber-600 underline underline-offset-2">Upgrade</a> to select multiple formats.
+                  <button type="button" onClick={scrollToPricing} className="text-amber-600 underline underline-offset-2">Upgrade</button> to select multiple formats.
                 </div>
               )}
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="text-xs text-muted-foreground">
+                Limits — {hasUnlimited ? (
+                  <span>
+                    Pro: up to {PRO_MAX_WORDS.toLocaleString()} words per input and {PRO_MAX_FILE_MB} MB per file.
+                  </span>
+                ) : (
+                  <span>
+                    Free: up to {FREE_MAX_WORDS.toLocaleString()} words per input and {FREE_MAX_FILE_MB} MB per file.
+                  </span>
+                )}
+              </div>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {formatOptions.map((opt) => {
                   // Don't restrict until billing/auth is loaded
                   const isAllowed = authLoaded ? canUseFormat(opt.key as FormatKey) : true;
@@ -517,7 +633,7 @@ const ToolUI = () => {
                     <TooltipProvider>
                       <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
-                          <label key={opt.key} className={`flex items-center gap-2 rounded-md border border-border px-3 py-2 ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-accent cursor-pointer'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200' : ''}`}>
+                          <label key={opt.key} className={`flex items-center gap-3 rounded-lg border-2 px-4 py-3 transition-all duration-200 ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-accent/50 hover:border-primary/30 cursor-pointer hover:scale-[1.02]'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 hover:from-amber-100 hover:to-orange-100' : 'border-border/50 hover:shadow-md'} ${selected[opt.key] ? 'border-primary bg-primary/5' : ''}`}>
                             <Checkbox
                               checked={selected[opt.key]}
                               onCheckedChange={(v) => {
@@ -565,57 +681,67 @@ const ToolUI = () => {
 
             {/* Step 3 */}
             <div className="space-y-4">
-              <h3 className="font-semibold">Step 3 — Tone & Length Controls</h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Tone</Label>
-                  <Select value={tone} onValueChange={setTone}>
-                    <SelectTrigger className="z-50">
-                      <SelectValue placeholder="Select tone" />
-                    </SelectTrigger>
-                    <SelectContent className="z-50 bg-popover">
-                      <SelectItem value="Professional">Professional</SelectItem>
-                      <SelectItem value="Casual">Casual</SelectItem>
-                      <SelectItem value="Witty">Witty</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                  3
                 </div>
-                <div className="space-y-2">
-                  <Label>Output Length</Label>
-                  <Slider min={1} max={5} step={1} value={length} onValueChange={setLength} />
-                </div>
+                <h3 className="text-xl font-semibold">Choose Tone</h3>
+              </div>
+              <div className="space-y-2">
+                <Label>Tone</Label>
+                <Select value={tone} onValueChange={setTone}>
+                  <SelectTrigger className="z-50 h-12 text-base border-2 border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20">
+                    <SelectValue placeholder="Select tone" />
+                  </SelectTrigger>
+                  <SelectContent className="z-50 bg-popover border-2">
+                    <SelectItem value="Professional" className="text-base py-3">Professional</SelectItem>
+                    <SelectItem value="Casual" className="text-base py-3">Casual</SelectItem>
+                    <SelectItem value="Witty" className="text-base py-3">Witty</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <Tooltip delayDuration={200}>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <Button
-                        variant="cta"
-                        size="lg"
-                        onClick={generateOutputs}
-                        disabled={isLoading || limitReached}
-                        aria-disabled={isLoading || limitReached}
-                      >
-                        {limitReached ? `Monthly limit reached` : (isLoading ? "Generating…" : "Repurpose My Content")}
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  {limitReached && (
-                    <TooltipContent>
-                      <p className="max-w-[220px] text-sm">You've used {usageCount}/{monthlyLimit} this month. Upgrade for unlimited.</p>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </TooltipProvider>
+          <div className="bg-muted/30 p-6 lg:p-8 rounded-t-none -mx-6 lg:-mx-8 mt-8">
+            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
+            <TooltipProvider>
+              <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      variant="cta"
+                      size="xl"
+                      onClick={generateOutputs}
+                      disabled={isLoading || limitReached}
+                      aria-disabled={isLoading || limitReached}
+                      className="text-lg px-8 py-4 min-w-[200px] font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      {limitReached ? `Monthly limit reached` : (isLoading ? "Generating…" : "🚀 Repurpose My Content")}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {limitReached && (
+                  <TooltipContent>
+                    <p className="max-w-[240px] text-sm">You've used {usageCount}/{monthlyLimit} this month. Upgrade for unlimited.</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+            {!hasUnlimited && (
+              <span className="text-xs text-muted-foreground">{usageCount}/{monthlyLimit} this month</span>
+            )}
               {(limitReached || !canSelectMultipleFormats || !canAccessPremiumFormats) && (
-                <Button asChild variant="outline" size="lg">
-                  <a href="/pricing">Upgrade</a>
+                <Button variant="outline" size="lg" onClick={scrollToPricing} className="px-6 py-3">
+                  ⚡ Upgrade to Pro
                 </Button>
               )}
+              {!hasUnlimited && (
+                <div className="text-center">
+                  <span className="text-sm text-muted-foreground">{usageCount}/{monthlyLimit} uses this month</span>
+                </div>
+              )}
             </div>
+          </div>
 
             {/* Outputs */}
             {outputs && outputs.length > 0 && (
@@ -659,10 +785,42 @@ const ToolUI = () => {
                 </div>
             </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+
+          {/* Auth modal for sign in/up */}
+          <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Continue for free</DialogTitle>
+                <DialogDescription>
+                  Create a free account to use your remaining monthly repurposes.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => redirectToSignIn({ redirectUrl: '/' })}>Sign in</Button>
+                <Button variant="cta" onClick={() => redirectToSignUp({ redirectUrl: '/' })}>Create free account</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Upgrade modal when monthly quota reached */}
+          <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Monthly limit reached</DialogTitle>
+                <DialogDescription>
+                  You have used {usageCount}/{monthlyLimit} repurposes this month. Upgrade for unlimited usage and access to all formats.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setShowUpgradeModal(false)}>Close</Button>
+                <Button variant="cta" onClick={() => { setShowUpgradeModal(false); scrollToPricing(); }}>Upgrade</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
+    </div>
+  </section>
   );
 };
 
