@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 import { useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -465,36 +466,84 @@ const ToolUI = () => {
                   </div>
                 </div>
               )}
+              {/* Prominent quota banner */}
+              <div className={`mt-2 rounded-md border ${hasUnlimited ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'} p-3 flex flex-col gap-2`}>
+                {hasUnlimited ? (
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-emerald-800 flex items-center gap-2">
+                      <Crown className="h-4 w-4 text-emerald-600" />
+                      <span>Unlimited usage on Pro</span>
+                    </div>
+                    <Button asChild size="sm" variant="outline">
+                      <a href="/pricing">Manage Plan</a>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="w-full">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-muted-foreground">Monthly usage</span>
+                      <span className="text-foreground font-medium">{usageCount} / {monthlyLimit}</span>
+                    </div>
+                    <Progress value={Math.min(100, Math.round((usageCount / monthlyLimit) * 100))} className="h-2" />
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Free plan limit. Upgrade for unlimited.</span>
+                      <Button asChild size="sm" variant="outline">
+                        <a href="/pricing">Upgrade</a>
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Step 2 */}
             <div className="space-y-3">
               <h3 className="font-semibold">Step 2 — Select Output Formats</h3>
+              {!canSelectMultipleFormats && (
+                <div className="text-xs text-muted-foreground">
+                  Free plan allows <span className="font-medium text-foreground">1 format per request</span>.{' '}
+                  <a href="/pricing" className="text-amber-600 underline underline-offset-2">Upgrade</a> to select multiple formats.
+                </div>
+              )}
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {formatOptions.map((opt) => {
                   // Don't restrict until billing/auth is loaded
                   const isAllowed = authLoaded ? canUseFormat(opt.key as FormatKey) : true;
                   const selectedCount = Object.values(selected).filter(Boolean).length;
                   const disabled = !isAllowed;
-                  const multiBlocked = !disabled && !canSelectMultipleFormats && !selected[opt.key] && selectedCount >= 1;
-                  const showTooltip = disabled || multiBlocked;
+                  const multiBlocked = !disabled && !canSelectMultipleFormats && selectedCount >= 1;
+                  const showTooltip = disabled; // Only show tooltip for premium gating; we auto-switch for multi-select
                   return (
                     <TooltipProvider>
                       <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
-                          <label key={opt.key} className={`flex items-center gap-2 rounded-md border border-border px-3 py-2 ${disabled || multiBlocked ? 'opacity-60 cursor-not-allowed' : 'hover:bg-accent cursor-pointer'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200' : ''}`}>
+                          <label key={opt.key} className={`flex items-center gap-2 rounded-md border border-border px-3 py-2 ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-accent cursor-pointer'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200' : ''}`}>
                             <Checkbox
                               checked={selected[opt.key]}
                               onCheckedChange={(v) => {
                                 const next = Boolean(v);
-                                if ((disabled || multiBlocked) && next) {
-                                  toast({ title: 'Upgrade required', description: disabled ? 'This is a Pro format.' : 'Your plan allows 1 format per request.' });
+                                if (disabled && next) {
+                                  toast({ title: 'Upgrade required', description: 'This is a Pro format.' });
+                                  return;
+                                }
+                                if (!canSelectMultipleFormats) {
+                                  if (next) {
+                                    // Auto-switch to only this format on Free
+                                    setSelected((s) => {
+                                      const n: Record<FormatKey, boolean> = { ...s } as any;
+                                      (Object.keys(n) as FormatKey[]).forEach((k) => (n[k] = k === (opt.key as FormatKey)));
+                                      return n;
+                                    });
+                                  } else {
+                                    // Allow unchecking the only selected
+                                    setSelected((s) => ({ ...s, [opt.key]: false }));
+                                  }
                                   return;
                                 }
                                 setSelected((s) => ({ ...s, [opt.key]: next }));
                               }}
                               id={`fmt-${opt.key}`}
-                              disabled={disabled || multiBlocked}
+                              disabled={disabled}
                             />
                             <Label htmlFor={`fmt-${opt.key}`} className={isPremiumFormat(opt.key as FormatKey) ? 'text-amber-700' : ''}>{opt.label}</Label>
                             {isPremiumFormat(opt.key as FormatKey) && (
@@ -504,9 +553,7 @@ const ToolUI = () => {
                         </TooltipTrigger>
                         {showTooltip && (
                           <TooltipContent>
-                            <p className="max-w-[220px] text-sm">
-                              {disabled ? 'Pro-only format. Upgrade to access all formats.' : 'Free plan allows 1 format per request. Upgrade to select multiple formats.'}
-                            </p>
+                            <p className="max-w-[220px] text-sm">Pro-only format. Upgrade to access all formats.</p>
                           </TooltipContent>
                         )}
                       </Tooltip>
@@ -540,7 +587,7 @@ const ToolUI = () => {
               </div>
             </div>
 
-            <div>
+            <div className="flex items-center gap-2">
               <TooltipProvider>
                 <Tooltip delayDuration={200}>
                   <TooltipTrigger asChild>
@@ -563,6 +610,11 @@ const ToolUI = () => {
                   )}
                 </Tooltip>
               </TooltipProvider>
+              {(limitReached || !canSelectMultipleFormats || !canAccessPremiumFormats) && (
+                <Button asChild variant="outline" size="lg">
+                  <a href="/pricing">Upgrade</a>
+                </Button>
+              )}
             </div>
 
             {/* Outputs */}
