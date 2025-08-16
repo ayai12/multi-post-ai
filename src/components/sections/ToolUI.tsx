@@ -131,6 +131,14 @@ const ToolUI = () => {
     } catch {}
   };
 
+  // Local UI state for showing live usage and unlimited flag
+  const hasUnlimited = monthlyLimit === -1;
+  const [usageCount, setUsageCount] = useState<number>(0);
+  useEffect(() => {
+    setUsageCount(getUsage());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthKey]);
+
   const generateOutputs = async () => {
     if (!authLoaded) {
       toast({ title: "Please wait", description: "Loading your billing status..." });
@@ -143,9 +151,6 @@ const ToolUI = () => {
 
     const len = Math.max(1, Math.min(5, length[0]));
     const formats = selectedFormats;
-
-    // Determine unlimited via entitlements
-    const hasUnlimited = monthlyLimit === -1;
 
     // Enforce monthly limit for non-unlimited users
     if (!hasUnlimited) {
@@ -177,6 +182,7 @@ const ToolUI = () => {
       setOutputs(result);
       // Record usage for limited plans after success
       if (!hasUnlimited) incUsage();
+      if (!hasUnlimited) setUsageCount((c) => c + 1);
       toast({ title: "Repurposed!", description: "Preview outputs are ready." });
       // Smooth scroll to outputs
       requestAnimationFrame(() => {
@@ -409,7 +415,27 @@ const ToolUI = () => {
       <div className="container py-14">
         <Card className="shadow-[var(--shadow-soft)]">
           <CardHeader>
-            <CardTitle className="text-2xl">Repurpose Content in 3 Easy Steps (AI-Powered)</CardTitle>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle className="text-2xl">Repurpose Content in 3 Easy Steps (AI-Powered)</CardTitle>
+              <div className="flex items-center gap-3">
+                {hasUnlimited ? (
+                  <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-1">
+                    <Crown className="h-4 w-4 text-emerald-600" />
+                    <span>Unlimited on Pro</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm text-muted-foreground">
+                      <span className="font-medium text-foreground">{usageCount}</span>
+                      <span> / {monthlyLimit} used this month</span>
+                    </div>
+                    <Button asChild size="sm" variant="outline">
+                      <a href="/pricing">Upgrade</a>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-8">
             {/* Step 1 */}
