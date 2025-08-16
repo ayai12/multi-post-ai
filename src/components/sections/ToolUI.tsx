@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -410,6 +411,8 @@ const ToolUI = () => {
     return body.length > 400;
   };
 
+  const limitReached = !hasUnlimited && usageCount >= monthlyLimit;
+
   return (
     <section id="toolUI" className="bg-muted">
       <div className="container py-14">
@@ -473,30 +476,41 @@ const ToolUI = () => {
                   const isAllowed = authLoaded ? canUseFormat(opt.key as FormatKey) : true;
                   const selectedCount = Object.values(selected).filter(Boolean).length;
                   const disabled = !isAllowed;
+                  const multiBlocked = !disabled && !canSelectMultipleFormats && !selected[opt.key] && selectedCount >= 1;
+                  const showTooltip = disabled || multiBlocked;
                   return (
-                    <label key={opt.key} className={`flex items-center gap-2 rounded-md border border-border px-3 py-2 ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-accent cursor-pointer'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200' : ''}`}>
-                      <Checkbox
-                        checked={selected[opt.key]}
-                        onCheckedChange={(v) => {
-                          const next = Boolean(v);
-                          if (disabled && next) {
-                            toast({ title: 'Upgrade required', description: 'This is a Pro format.' });
-                            return;
-                          }
-                          if (next && !canSelectMultipleFormats && !selected[opt.key] && selectedCount >= 1) {
-                            toast({ title: 'Limit reached', description: 'Your plan allows 1 format per request.' });
-                            return;
-                          }
-                          setSelected((s) => ({ ...s, [opt.key]: next }));
-                        }}
-                        id={`fmt-${opt.key}`}
-                        disabled={disabled}
-                      />
-                      <Label htmlFor={`fmt-${opt.key}`} className={isPremiumFormat(opt.key as FormatKey) ? 'text-amber-700' : ''}>{opt.label}</Label>
-                      {isPremiumFormat(opt.key as FormatKey) && (
-                        <Crown className="h-3 w-3 text-amber-500 ml-auto" />
-                      )}
-                    </label>
+                    <TooltipProvider>
+                      <Tooltip delayDuration={200}>
+                        <TooltipTrigger asChild>
+                          <label key={opt.key} className={`flex items-center gap-2 rounded-md border border-border px-3 py-2 ${disabled || multiBlocked ? 'opacity-60 cursor-not-allowed' : 'hover:bg-accent cursor-pointer'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200' : ''}`}>
+                            <Checkbox
+                              checked={selected[opt.key]}
+                              onCheckedChange={(v) => {
+                                const next = Boolean(v);
+                                if ((disabled || multiBlocked) && next) {
+                                  toast({ title: 'Upgrade required', description: disabled ? 'This is a Pro format.' : 'Your plan allows 1 format per request.' });
+                                  return;
+                                }
+                                setSelected((s) => ({ ...s, [opt.key]: next }));
+                              }}
+                              id={`fmt-${opt.key}`}
+                              disabled={disabled || multiBlocked}
+                            />
+                            <Label htmlFor={`fmt-${opt.key}`} className={isPremiumFormat(opt.key as FormatKey) ? 'text-amber-700' : ''}>{opt.label}</Label>
+                            {isPremiumFormat(opt.key as FormatKey) && (
+                              <Crown className="h-3 w-3 text-amber-500 ml-auto" />
+                            )}
+                          </label>
+                        </TooltipTrigger>
+                        {showTooltip && (
+                          <TooltipContent>
+                            <p className="max-w-[220px] text-sm">
+                              {disabled ? 'Pro-only format. Upgrade to access all formats.' : 'Free plan allows 1 format per request. Upgrade to select multiple formats.'}
+                            </p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   );
                 })}
               </div>
@@ -527,9 +541,28 @@ const ToolUI = () => {
             </div>
 
             <div>
-              <Button variant="cta" size="lg" onClick={generateOutputs} disabled={isLoading}>
-                {isLoading ? "Generating…" : "Repurpose My Content"}
-              </Button>
+              <TooltipProvider>
+                <Tooltip delayDuration={200}>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        variant="cta"
+                        size="lg"
+                        onClick={generateOutputs}
+                        disabled={isLoading || limitReached}
+                        aria-disabled={isLoading || limitReached}
+                      >
+                        {limitReached ? `Monthly limit reached` : (isLoading ? "Generating…" : "Repurpose My Content")}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {limitReached && (
+                    <TooltipContent>
+                      <p className="max-w-[220px] text-sm">You've used {usageCount}/{monthlyLimit} this month. Upgrade for unlimited.</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             </div>
 
             {/* Outputs */}

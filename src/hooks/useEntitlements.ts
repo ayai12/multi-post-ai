@@ -67,7 +67,8 @@ export function useEntitlements() {
   const limit100 = metaHas("monthly_repurposes_limit_100");
 
   // Final computed entitlements
-  const canSelectMultipleFormats = allFormatsPerRequest || (!oneFormatPerRequest && accessAllFormats);
+  // Strict: only allow multi-select when explicitly granted by feature
+  const canSelectMultipleFormats = Boolean(allFormatsPerRequest);
   const canAccessPremiumFormats = accessAllFormats && !limitedFormats;
 
   // Determine monthly limit priority: unlimited > 100 > 5 (default to 5 if neither set)
@@ -104,7 +105,7 @@ export function useEntitlements() {
 
     // derived flags
     unlimitedRepurposes,
-    canSelectMultipleFormats: canSelectMultipleFormats || !oneFormatPerRequest,
+    canSelectMultipleFormats,
     canAccessPremiumFormats,
     earlyAccess,
     basicEditing,
