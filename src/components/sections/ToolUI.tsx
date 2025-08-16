@@ -42,8 +42,9 @@ const ToolUI = () => {
     canUseFormat,
     isPremiumFormat,
     canAccessPremiumFormats,
+    monthlyLimit,
   } = useEntitlements();
-  const { has, isLoaded: authLoaded } = useAuth();
+  const { has, isLoaded: authLoaded, userId } = useAuth();
   const [input, setInput] = useState("");
   const [selected, setSelected] = useState<Record<FormatKey, boolean>>({
     single_tweet: true,
@@ -97,17 +98,25 @@ const ToolUI = () => {
     api["Functions/generateContent"].generateContent
   );
 
-  // Simple monthly usage tracking for Free users (client-side)
+  // Simple monthly usage tracking (client-side, per-user)
   const monthKey = useMemo(() => {
     const d = new Date();
-    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
-  }, []);
+    const ym = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+    return `${userId || "anon"}:${ym}`;
+  }, [userId]);
 
   const getUsage = () => {
     try {
+      // v2 storage key (per-user)
+      const rawV2 = localStorage.getItem("usageCountsV2");
+      const allV2 = rawV2 ? (JSON.parse(rawV2) as Record<string, number>) : {};
+      if (allV2[monthKey] != null) return allV2[monthKey];
+      // backward-compat: old global counts (no user scoping)
       const raw = localStorage.getItem("usageCounts");
       const all = raw ? (JSON.parse(raw) as Record<string, number>) : {};
-      return all[monthKey] || 0;
+      // Use current month portion from key to attempt a match
+      const ym = monthKey.split(":").pop() as string;
+      return all[ym] || 0;
     } catch {
       return 0;
     }
@@ -115,10 +124,10 @@ const ToolUI = () => {
 
   const incUsage = () => {
     try {
-      const raw = localStorage.getItem("usageCounts");
-      const all = raw ? (JSON.parse(raw) as Record<string, number>) : {};
-      all[monthKey] = (all[monthKey] || 0) + 1;
-      localStorage.setItem("usageCounts", JSON.stringify(all));
+      const rawV2 = localStorage.getItem("usageCountsV2");
+      const allV2 = rawV2 ? (JSON.parse(rawV2) as Record<string, number>) : {};
+      allV2[monthKey] = (allV2[monthKey] || 0) + 1;
+      localStorage.setItem("usageCountsV2", JSON.stringify(allV2));
     } catch {}
   };
 
@@ -135,18 +144,17 @@ const ToolUI = () => {
     const len = Math.max(1, Math.min(5, length[0]));
     const formats = selectedFormats;
 
-    // Determine Pro via Clerk has(): prefer feature checks, but also check plan slug if configured
-    const isPro = (typeof has === "function") && (
-      has({ feature: "unlimited_repurposes_month" }) ||
-      has({ feature: "access_to_all_formats" }) ||
-      has({ plan: PRO_PLAN_SLUG as any })
-    );
+    // Determine unlimited via entitlements
+    const hasUnlimited = monthlyLimit === -1;
 
-    // Enforce monthly limit for Free users (10/month)
-    if (!isPro) {
+    // Enforce monthly limit for non-unlimited users
+    if (!hasUnlimited) {
       const count = getUsage();
-      if (count >= 10) {
-        toast({ title: "Monthly limit reached", description: "You have reached 10 repurposes this month. Upgrade to Pro for unlimited." });
+      if (count >= monthlyLimit) {
+        toast({
+          title: "Monthly limit reached",
+          description: `You've used ${count}/${monthlyLimit} repurposes this month. Visit Pricing to upgrade for unlimited.`,
+        });
         return;
       }
     }
@@ -167,8 +175,8 @@ const ToolUI = () => {
       });
 
       setOutputs(result);
-      // Record usage for Free users only after success
-      if (!isPro) incUsage();
+      // Record usage for limited plans after success
+      if (!hasUnlimited) incUsage();
       toast({ title: "Repurposed!", description: "Preview outputs are ready." });
       // Smooth scroll to outputs
       requestAnimationFrame(() => {
