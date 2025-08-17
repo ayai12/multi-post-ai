@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { SignInButton, UserButton, useUser } from "@clerk/clerk-react";
+import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 
@@ -82,11 +82,26 @@ const Navbar = () => {
                   Login
                 </a>
               </SignInButton>
-              <Button asChild variant="cta" size="sm">
-                <a href="#toolUI" aria-label="Sign Up">
+              <SignUpButton
+                appearance={{
+                  variables: {
+                    colorPrimary: '#FF6B35',
+                    colorForeground: '#2E2E2E',
+                    colorPrimaryForeground: '#FFFFFF',
+                    colorBackground: '#FDF7F2',
+                    colorInput: '#FFF1E6',
+                    colorInputForeground: '#2E2E2E',
+                    colorMutedForeground: '#5A5A5A',
+                    colorSuccess: '#00A676',
+                    colorWarning: '#FFD23F',
+                    colorDanger: '#E85A2A',
+                  },
+                }}
+              >
+                <Button variant="cta" size="sm">
                   Sign Up
-                </a>
-              </Button>
+                </Button>
+              </SignUpButton>
             </>
           )}
           {isSignedIn && <UserButton afterSignOutUrl="/" />} 
@@ -95,11 +110,26 @@ const Navbar = () => {
         {/* Mobile Navigation */}
         <div className="lg:hidden flex items-center gap-3">
           {!isSignedIn && (
-            <Button asChild variant="cta" size="sm">
-              <a href="#toolUI">
+            <SignUpButton
+              appearance={{
+                variables: {
+                  colorPrimary: '#FF6B35',
+                  colorForeground: '#2E2E2E',
+                  colorPrimaryForeground: '#FFFFFF',
+                  colorBackground: '#FDF7F2',
+                  colorInput: '#FFF1E6',
+                  colorInputForeground: '#2E2E2E',
+                  colorMutedForeground: '#5A5A5A',
+                  colorSuccess: '#00A676',
+                  colorWarning: '#FFD23F',
+                  colorDanger: '#E85A2A',
+                },
+              }}
+            >
+              <Button variant="cta" size="sm">
                 Try Free
-              </a>
-            </Button>
+              </Button>
+            </SignUpButton>
           )}
           {isSignedIn && <UserButton afterSignOutUrl="/" />}
           <Button
@@ -118,27 +148,7 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <div className="lg:hidden bg-background border-b border-border">
           <div className="container py-4 space-y-3">
-            <a 
-              href="/about" 
-              className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              About
-            </a>
-            <a 
-              href="/blog" 
-              className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Blog
-            </a>
-            <a 
-              href="/faq" 
-              className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              FAQ
-            </a>
+            
             <a
               href="#pricing"
               onClick={(e) => {

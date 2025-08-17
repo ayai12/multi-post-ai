@@ -1,4 +1,5 @@
 import { Twitter, Linkedin } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Footer = () => {
   return (
@@ -13,7 +14,13 @@ const Footer = () => {
           <a href="/faq" className="hover:text-foreground text-muted-foreground">FAQ</a>
           <a href="https://x.com/ReinwatashiDev" target="_blank" rel="noopener noreferrer" className="hover:text-foreground text-muted-foreground">Contact</a>
         </nav>
-        <div className="flex justify-end gap-3">
+        <div className="flex justify-end gap-3 items-center">
+          <Button variant="outline" size="sm" asChild className="group">
+            <a href="https://x.com/ReinwatashiDev" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+              Follow My Journey
+              <span className="group-hover:scale-110 transition-transform duration-200">👀</span>
+            </a>
+          </Button>
           <a href="https://x.com/ReinwatashiDev" target="_blank" rel="noopener noreferrer" aria-label="Follow on Twitter" className="p-2 rounded-md border border-border hover:bg-accent">
             <Twitter className="size-4" />
           </a>

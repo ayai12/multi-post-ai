@@ -77,11 +77,32 @@ const ToolUI = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const { redirectToSignIn, redirectToSignUp } = useClerk();
+  const debounceRef = useRef<number | null>(null);
+
+  // Cleanup any pending debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
 
   const scrollToPricing = () => {
     const el = document.getElementById('pricing');
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     else window.location.hash = '#pricing';
+  };
+
+  // Debounced click handler to avoid accidental double-triggering
+  const handleGenerateClick = () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = window.setTimeout(() => {
+      debounceRef.current = null;
+      generateOutputs();
+    }, 300);
   };
 
   // Helpers
@@ -122,6 +143,7 @@ const ToolUI = () => {
   const selectedFormats = useMemo(() =>
     formatOptions.filter(f => selected[f.key]).map(f => f.key), [selected]
   );
+  const noFormatSelected = selectedFormats.length === 0;
 
   const runGenerateContent = useAction(
     api["Functions/generateContent"].generateContent
@@ -463,10 +485,10 @@ const ToolUI = () => {
     <section id="toolUI" className="bg-muted/30">
       <div className="container py-16 lg:py-20">
         <div className="text-center mb-10">
-          <h2 className="text-2xl lg:text-3xl font-bold mb-3">Repurpose Content in 3 Easy Steps</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">AI-powered tool that understands platform differences</p>
+          <h2 className="text-3xl lg:text-4xl font-bold mb-3 text-foreground">Repurpose Content, Professionally</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">Paste text or upload a file. Select formats. Generate high-quality outputs fast.</p>
         </div>
-        <Card className="shadow-lg border bg-border/20">
+        <Card className="shadow-lg border bg-background">
           <CardHeader className="pb-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-3">
@@ -476,11 +498,9 @@ const ToolUI = () => {
                     <span className="font-medium">Unlimited on Pro</span>
                   </div>
                 ) : (
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <div className="text-sm text-muted-foreground">
-                      <span className="font-medium text-foreground">{usageCount}</span>
-                      <span> / {monthlyLimit} used this month</span>
-                    </div>
+                  <div className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{usageCount}</span>
+                    <span> / {monthlyLimit} used this month</span>
                   </div>
                 )}
               </div>
@@ -496,7 +516,7 @@ const ToolUI = () => {
                 <h3 className="text-lg font-semibold">Content Input</h3>
               </div>
               <Textarea
-                placeholder="Paste your blog post, transcript, or any long-form content here…"
+                placeholder="Paste your content here… (articles, transcripts, newsletters, any text)"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 className="min-h-40 resize-none focus:ring-2 focus:ring-primary/20 transition-colors"
@@ -599,9 +619,7 @@ const ToolUI = () => {
             {/* Step 2 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold text-sm">
-                  2
-                </div>
+                <div className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold text-sm">2</div>
                 <h3 className="text-lg font-semibold">Select Output Formats</h3>
               </div>
               {!canSelectMultipleFormats && (
@@ -621,19 +639,19 @@ const ToolUI = () => {
                   </span>
                 )}
               </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {formatOptions.map((opt) => {
-                  // Don't restrict until billing/auth is loaded
-                  const isAllowed = authLoaded ? canUseFormat(opt.key as FormatKey) : true;
-                  const selectedCount = Object.values(selected).filter(Boolean).length;
-                  const disabled = !isAllowed;
-                  const multiBlocked = !disabled && !canSelectMultipleFormats && selectedCount >= 1;
-                  const showTooltip = disabled; // Only show tooltip for premium gating; we auto-switch for multi-select
-                  return (
-                    <TooltipProvider>
+              <TooltipProvider>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {formatOptions.map((opt) => {
+                    // Don't restrict until billing/auth is loaded
+                    const isAllowed = authLoaded ? canUseFormat(opt.key as FormatKey) : true;
+                    const selectedCount = Object.values(selected).filter(Boolean).length;
+                    const disabled = !isAllowed;
+                    const multiBlocked = !disabled && !canSelectMultipleFormats && selectedCount >= 1;
+                    const showTooltip = disabled; // Only show tooltip for premium gating; we auto-switch for multi-select
+                    return (
                       <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
-                          <label key={opt.key} className={`flex items-center gap-2 rounded-md border px-3 py-2 transition-colors ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-accent cursor-pointer'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200' : ''} ${selected[opt.key] ? 'border-primary bg-primary/5' : ''}`}>
+                          <label key={opt.key} className={`flex items-center gap-2 rounded-md border px-3 py-2 transition-colors ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-accent cursor-pointer'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-amber-50 border-amber-200' : ''} ${selected[opt.key] ? 'border-primary bg-primary/5' : ''}`}>
                             <Checkbox
                               checked={selected[opt.key]}
                               onCheckedChange={(v) => {
@@ -661,10 +679,8 @@ const ToolUI = () => {
                               id={`fmt-${opt.key}`}
                               disabled={disabled}
                             />
-                            <Label htmlFor={`fmt-${opt.key}`} className={isPremiumFormat(opt.key as FormatKey) ? 'text-amber-700' : ''}>{opt.label}</Label>
-                            {isPremiumFormat(opt.key as FormatKey) && (
-                              <Crown className="h-3 w-3 text-amber-500 ml-auto" />
-                            )}
+                            <Label htmlFor={`fmt-${opt.key}`}>{opt.label}</Label>
+                            {isPremiumFormat(opt.key as FormatKey) && (<Crown className="h-3 w-3 text-amber-500 ml-auto" />)}
                           </label>
                         </TooltipTrigger>
                         {showTooltip && (
@@ -673,22 +689,20 @@ const ToolUI = () => {
                           </TooltipContent>
                         )}
                       </Tooltip>
-                    </TooltipProvider>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              </TooltipProvider>
             </div>
 
             {/* Step 3 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold text-sm">
-                  3
-                </div>
-                <h3 className="text-lg font-semibold">Choose Tone</h3>
+                <div className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold text-sm">3</div>
+                <h3 className="text-lg font-semibold">Brand Voice & Tone</h3>
               </div>
               <div className="space-y-2">
-                <Label>Tone</Label>
+                <Label>Brand Voice</Label>
                 <Select value={tone} onValueChange={setTone}>
                   <SelectTrigger className="z-50">
                     <SelectValue placeholder="Select tone" />
@@ -702,49 +716,78 @@ const ToolUI = () => {
               </div>
             </div>
 
-          <div className="flex items-center gap-3 flex-wrap justify-center pt-6">
-            <TooltipProvider>
-              <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild>
-                  <span>
-                    <Button
-                      variant="cta"
-                      size="xl"
-                      onClick={generateOutputs}
-                      disabled={isLoading || limitReached}
-                      aria-disabled={isLoading || limitReached}
-                      className="px-6 py-3 font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {limitReached ? `Monthly limit reached` : (isLoading ? (
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Generating…
-                        </div>
-                      ) : "🚀 Repurpose My Content")}
-                    </Button>
+          <div className="pt-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <TooltipProvider>
+                  <Tooltip delayDuration={200}>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="cta"
+                          size="xl"
+                          onClick={handleGenerateClick}
+                          disabled={isLoading || limitReached || noFormatSelected}
+                          aria-disabled={isLoading || limitReached || noFormatSelected}
+                          className="px-6 py-3 font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {limitReached ? `Monthly limit reached` : (isLoading ? (
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              Generating…
+                            </div>
+                          ) : (noFormatSelected ? "Select a format" : "Repurpose My Content"))}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {(limitReached || noFormatSelected) && (
+                      <TooltipContent>
+                        <p className="max-w-[260px] text-sm">
+                          {limitReached
+                            ? `You've used ${usageCount}/${monthlyLimit} this month. Upgrade for unlimited.`
+                            : `Select at least one output format above to continue.`}
+                        </p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
+                {!hasUnlimited && (
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    {Math.max(0, monthlyLimit - usageCount)} of {monthlyLimit} left this month
                   </span>
-                </TooltipTrigger>
-                {limitReached && (
-                  <TooltipContent>
-                    <p className="max-w-[240px] text-sm">You've used {usageCount}/{monthlyLimit} this month. Upgrade for unlimited.</p>
-                  </TooltipContent>
                 )}
-              </Tooltip>
-            </TooltipProvider>
-            {!hasUnlimited && (
-              <span className="text-xs text-muted-foreground">{usageCount}/{monthlyLimit} this month</span>
-            )}
-            {(limitReached || !canSelectMultipleFormats || !canAccessPremiumFormats) && (
-              <Button variant="outline" size="lg" onClick={scrollToPricing}>
-                Upgrade to Pro
-              </Button>
-            )}
+              </div>
+              {(limitReached || !canSelectMultipleFormats || !canAccessPremiumFormats) && (
+                <Button variant="outline" size="lg" onClick={scrollToPricing} className="w-full sm:w-auto">
+                  Upgrade to Pro
+                </Button>
+              )}
+            </div>
           </div>
+
+            {/* Loading skeletons */}
+            {isLoading && (
+              <div className="space-y-4" ref={outputsRef} id="outputs">
+                <h3 className="font-semibold">Generating…</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="rounded-md border border-border bg-background p-4 animate-pulse">
+                      <div className="h-4 w-1/3 bg-muted rounded mb-3"></div>
+                      <div className="space-y-2">
+                        <div className="h-3 bg-muted rounded w-full"></div>
+                        <div className="h-3 bg-muted rounded w-11/12"></div>
+                        <div className="h-3 bg-muted rounded w-10/12"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Outputs */}
             {outputs && outputs.length > 0 && (
               <div className="space-y-4" ref={outputsRef} id="outputs">
-              <h3 className="font-semibold">Repurposed Outputs</h3>
+                <h3 className="font-semibold">Repurposed Outputs</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {outputs.map((out, i) => {
                     const isOpen = !!expanded[i];
@@ -752,7 +795,7 @@ const ToolUI = () => {
                     const showMore = hasOverflow(out.title, out.body);
                     return (
                       <Card key={i} className={`flex flex-col hover:shadow-md transition-shadow ${accentBorderClass(key)}`}>
-                      <CardHeader className="pb-2">
+                        <CardHeader className="pb-2">
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
                               {formatIcon(key)}
@@ -760,8 +803,8 @@ const ToolUI = () => {
                             </div>
                             <Badge variant="secondary">AI</Badge>
                           </div>
-                      </CardHeader>
-                      <CardContent className="flex-1 flex flex-col">
+                        </CardHeader>
+                        <CardContent className="flex-1 flex flex-col">
                           {renderBody(out.title, out.body, isOpen)}
                           <div className="mt-4 flex flex-wrap gap-2">
                             {showMore && (
@@ -773,15 +816,15 @@ const ToolUI = () => {
                                 {isOpen ? "Show less" : "Show more"}
                               </Button>
                             )}
-                          <Button variant="secondary" size="sm" onClick={() => onCopy(out.body)}>Copy</Button>
-                          <Button variant="outline" size="sm" onClick={() => onDownload(out.title, out.body)}>Download .txt</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                            <Button variant="secondary" size="sm" onClick={() => onCopy(out.body)}>Copy</Button>
+                            <Button variant="outline" size="sm" onClick={() => onDownload(out.title, out.body)}>Download .txt</Button>
+                          </div>
+                        </CardContent>
+                      </Card>
                     );
                   })}
                 </div>
-            </div>
+              </div>
             )}
 
           {/* Auth modal for sign in/up */}
@@ -794,8 +837,8 @@ const ToolUI = () => {
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => redirectToSignIn({ redirectUrl: '/' })}>Sign in</Button>
-                <Button variant="cta" onClick={() => redirectToSignUp({ redirectUrl: '/' })}>Create free account</Button>
+                <Button variant="outline" onClick={() => redirectToSignIn({ redirectUrl: '/' })} className="border-2">Sign in</Button>
+                <Button variant="cta" onClick={() => redirectToSignUp({ redirectUrl: '/' })} className="bg-gradient-to-r from-primary to-primary/90 shadow-lg">Create free account</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -810,8 +853,11 @@ const ToolUI = () => {
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => setShowUpgradeModal(false)}>Close</Button>
-                <Button variant="cta" onClick={() => { setShowUpgradeModal(false); scrollToPricing(); }}>Upgrade</Button>
+                <Button variant="outline" onClick={() => setShowUpgradeModal(false)} className="border-2">Close</Button>
+                <Button variant="cta" onClick={() => { setShowUpgradeModal(false); scrollToPricing(); }} className="bg-gradient-to-r from-primary to-primary/90 shadow-lg">
+                  <Crown className="h-4 w-4 mr-2" />
+                  Upgrade to Pro
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
