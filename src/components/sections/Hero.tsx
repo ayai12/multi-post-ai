@@ -8,7 +8,7 @@ const Hero = () => {
         <div className="space-y-6 lg:space-y-8 text-center lg:text-left">
           <div className="mb-4">
             <span className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium">
-              Enterprise-Grade Content Intelligence
+              Social-Ready in Seconds
             </span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-tight">
