@@ -462,11 +462,11 @@ const ToolUI = () => {
   return (
     <section id="toolUI" className="bg-muted/30">
       <div className="container py-16 lg:py-20">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4">Repurpose Content in 3 Easy Steps</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">AI-powered tool that understands platform differences</p>
+        <div className="text-center mb-10">
+          <h2 className="text-2xl lg:text-3xl font-bold mb-3">Repurpose Content in 3 Easy Steps</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">AI-powered tool that understands platform differences</p>
         </div>
-        <Card className="shadow-xl border-0 bg-background/95 backdrop-blur">
+        <Card className="shadow-lg border bg-border/20">
           <CardHeader className="pb-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-3">
@@ -486,20 +486,20 @@ const ToolUI = () => {
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-10 lg:space-y-12 px-6 lg:px-8">
+          <CardContent className="space-y-8 px-6">
             {/* Step 1 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                <div className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold text-sm">
                   1
                 </div>
-                <h3 className="text-xl font-semibold">Content Input</h3>
+                <h3 className="text-lg font-semibold">Content Input</h3>
               </div>
               <Textarea
                 placeholder="Paste your blog post, transcript, or any long-form content here…"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="min-h-48 text-base leading-relaxed resize-none focus:ring-2 focus:ring-primary/20 border-2 border-border/50 focus:border-primary/50 transition-colors"
+                className="min-h-40 resize-none focus:ring-2 focus:ring-primary/20 transition-colors"
               />
               {/* Word count and limits */}
               <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -599,10 +599,10 @@ const ToolUI = () => {
             {/* Step 2 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                <div className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold text-sm">
                   2
                 </div>
-                <h3 className="text-xl font-semibold">Select Output Formats</h3>
+                <h3 className="text-lg font-semibold">Select Output Formats</h3>
               </div>
               {!canSelectMultipleFormats && (
                 <div className="text-xs text-muted-foreground">
@@ -621,7 +621,7 @@ const ToolUI = () => {
                   </span>
                 )}
               </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {formatOptions.map((opt) => {
                   // Don't restrict until billing/auth is loaded
                   const isAllowed = authLoaded ? canUseFormat(opt.key as FormatKey) : true;
@@ -633,7 +633,7 @@ const ToolUI = () => {
                     <TooltipProvider>
                       <Tooltip delayDuration={200}>
                         <TooltipTrigger asChild>
-                          <label key={opt.key} className={`flex items-center gap-3 rounded-lg border-2 px-4 py-3 transition-all duration-200 ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-accent/50 hover:border-primary/30 cursor-pointer hover:scale-[1.02]'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 hover:from-amber-100 hover:to-orange-100' : 'border-border/50 hover:shadow-md'} ${selected[opt.key] ? 'border-primary bg-primary/5' : ''}`}>
+                          <label key={opt.key} className={`flex items-center gap-2 rounded-md border px-3 py-2 transition-colors ${disabled ? 'opacity-60 cursor-not-allowed' : 'hover:bg-accent cursor-pointer'} relative ${isPremiumFormat(opt.key as FormatKey) ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200' : ''} ${selected[opt.key] ? 'border-primary bg-primary/5' : ''}`}>
                             <Checkbox
                               checked={selected[opt.key]}
                               onCheckedChange={(v) => {
@@ -682,28 +682,27 @@ const ToolUI = () => {
             {/* Step 3 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                <div className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-semibold text-sm">
                   3
                 </div>
-                <h3 className="text-xl font-semibold">Choose Tone</h3>
+                <h3 className="text-lg font-semibold">Choose Tone</h3>
               </div>
               <div className="space-y-2">
                 <Label>Tone</Label>
                 <Select value={tone} onValueChange={setTone}>
-                  <SelectTrigger className="z-50 h-12 text-base border-2 border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20">
+                  <SelectTrigger className="z-50">
                     <SelectValue placeholder="Select tone" />
                   </SelectTrigger>
-                  <SelectContent className="z-50 bg-popover border-2">
-                    <SelectItem value="Professional" className="text-base py-3">Professional</SelectItem>
-                    <SelectItem value="Casual" className="text-base py-3">Casual</SelectItem>
-                    <SelectItem value="Witty" className="text-base py-3">Witty</SelectItem>
+                  <SelectContent className="z-50 bg-popover">
+                    <SelectItem value="Professional">Professional</SelectItem>
+                    <SelectItem value="Casual">Casual</SelectItem>
+                    <SelectItem value="Witty">Witty</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-          <div className="bg-muted/30 p-6 lg:p-8 rounded-t-none -mx-6 lg:-mx-8 mt-8">
-            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
+          <div className="flex items-center gap-3 flex-wrap justify-center pt-6">
             <TooltipProvider>
               <Tooltip delayDuration={200}>
                 <TooltipTrigger asChild>
@@ -714,7 +713,7 @@ const ToolUI = () => {
                       onClick={generateOutputs}
                       disabled={isLoading || limitReached}
                       aria-disabled={isLoading || limitReached}
-                      className="text-lg px-8 py-4 min-w-[200px] font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-6 py-3 font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {limitReached ? `Monthly limit reached` : (isLoading ? (
                         <div className="flex items-center gap-2">
@@ -735,17 +734,11 @@ const ToolUI = () => {
             {!hasUnlimited && (
               <span className="text-xs text-muted-foreground">{usageCount}/{monthlyLimit} this month</span>
             )}
-              {(limitReached || !canSelectMultipleFormats || !canAccessPremiumFormats) && (
-                <Button variant="outline" size="lg" onClick={scrollToPricing} className="px-6 py-3">
-                  ⚡ Upgrade to Pro
-                </Button>
-              )}
-              {!hasUnlimited && (
-                <div className="text-center">
-                  <span className="text-sm text-muted-foreground">{usageCount}/{monthlyLimit} uses this month</span>
-                </div>
-              )}
-            </div>
+            {(limitReached || !canSelectMultipleFormats || !canAccessPremiumFormats) && (
+              <Button variant="outline" size="lg" onClick={scrollToPricing}>
+                Upgrade to Pro
+              </Button>
+            )}
           </div>
 
             {/* Outputs */}

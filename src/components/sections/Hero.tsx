@@ -41,8 +41,8 @@ const Hero = () => {
               loading="lazy"
               className="w-full rounded-xl shadow-2xl animate-float"
             />
-            <div className="absolute -top-2 -right-2 w-4 h-4 bg-primary rounded-full animate-pulse"></div>
-            <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-secondary/20 rounded-full"></div>
+            <div className="absolute -top-2 -right-2 w-3 h-3 bg-primary/60 rounded-full animate-pulse"></div>
+            <div className="absolute -bottom-2 -left-2 w-4 h-4 bg-secondary/10 rounded-full"></div>
           </div>
         </div>
       </div>
