@@ -19,11 +19,17 @@ const Hero = () => {
             Built by a solo developer who understands the creator struggle—because I live it too.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Button variant="cta" size="xl" asChild className="text-base px-8 py-4">
-              <a href="#toolUI">Try It Free (No Signup Required)</a>
+            <Button variant="cta" size="xl" asChild className="text-base px-8 py-4 group">
+              <a href="#toolUI" className="flex items-center gap-2">
+                Try It Free (No Signup Required)
+                <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+              </a>
             </Button>
-            <Button variant="outline" size="lg" asChild className="text-base px-6 py-3">
-              <a href="https://x.com/ReinwatashiDev" target="_blank" rel="noopener noreferrer">Follow My Journey</a>
+            <Button variant="outline" size="lg" asChild className="text-base px-6 py-3 group">
+              <a href="https://x.com/ReinwatashiDev" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                Follow My Journey
+                <span className="group-hover:scale-110 transition-transform duration-200">👀</span>
+              </a>
             </Button>
           </div>
         </div>

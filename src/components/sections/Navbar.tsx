@@ -31,7 +31,7 @@ const Navbar = () => {
       } border-border/60`}
     >
       <nav className="container flex h-16 items-center justify-between">
-        <a href="#hero" className="flex items-center gap-2 font-extrabold tracking-tight text-lg sm:text-xl">
+        <a href="#hero" className="flex items-center gap-2 font-extrabold tracking-tight text-lg sm:text-xl hover:opacity-80 transition-opacity">
           <img src="/favicon.png" alt="AI Content Repurposer" className="w-7 h-7 sm:w-8 sm:h-8" />
           <span className="hidden xs:inline">AI Content Repurposer</span>
           <span className="xs:hidden">AI Repurposer</span>
@@ -106,7 +106,8 @@ const Navbar = () => {
             variant="ghost"
             size="sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2"
+            className="p-2 hover:bg-accent/50 transition-colors"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>

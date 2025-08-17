@@ -714,9 +714,14 @@ const ToolUI = () => {
                       onClick={generateOutputs}
                       disabled={isLoading || limitReached}
                       aria-disabled={isLoading || limitReached}
-                      className="text-lg px-8 py-4 min-w-[200px] font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                      className="text-lg px-8 py-4 min-w-[200px] font-semibold shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {limitReached ? `Monthly limit reached` : (isLoading ? "Generating…" : "🚀 Repurpose My Content")}
+                      {limitReached ? `Monthly limit reached` : (isLoading ? (
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Generating…
+                        </div>
+                      ) : "🚀 Repurpose My Content")}
                     </Button>
                   </span>
                 </TooltipTrigger>
