@@ -7,6 +7,7 @@ import './index.css'
 import { ClerkProvider, useAuth } from '@clerk/clerk-react';
 import { ConvexProviderWithClerk } from 'convex/react-clerk';
 import { ConvexReactClient } from 'convex/react';
+import { HelmetProvider } from 'react-helmet-async';
 
 // Import your Publishable Key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
@@ -20,6 +21,7 @@ const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <HelmetProvider>
     <ClerkProvider 
       publishableKey={PUBLISHABLE_KEY} 
       afterSignOutUrl="/"
@@ -42,6 +44,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <App />
       </ConvexProviderWithClerk>
     </ClerkProvider>
+    </HelmetProvider>
   </React.StrictMode>,
 )
 

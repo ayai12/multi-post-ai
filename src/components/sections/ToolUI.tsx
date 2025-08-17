@@ -717,7 +717,7 @@ const ToolUI = () => {
             </div>
 
           <div className="pt-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 <TooltipProvider>
                   <Tooltip delayDuration={200}>
@@ -729,7 +729,7 @@ const ToolUI = () => {
                           onClick={handleGenerateClick}
                           disabled={isLoading || limitReached || noFormatSelected}
                           aria-disabled={isLoading || limitReached || noFormatSelected}
-                          className="px-6 py-3 font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full sm:w-auto px-6 py-3 font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {limitReached ? `Monthly limit reached` : (isLoading ? (
                             <div className="flex items-center gap-2">
