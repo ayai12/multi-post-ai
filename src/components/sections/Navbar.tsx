@@ -57,7 +57,7 @@ const Navbar = () => {
               {moreOpen && (
                 <div className="absolute right-0 mt-2 w-44 rounded-md border border-border bg-background shadow-sm py-1">
                   <a href="#use-cases" onClick={(e) => { scrollToId(e, 'use-cases'); setMoreOpen(false); }} className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40">Use cases</a>
-                  <a href="#integrations" onClick={(e) => { scrollToId(e, 'integrations'); setMoreOpen(false); }} className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40">Integrations</a>
+                  {/* <a href="#integrations" onClick={(e) => { scrollToId(e, 'integrations'); setMoreOpen(false); }} className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40">Integrations</a> */}
                   <a href="#faq" onClick={(e) => { scrollToId(e, 'faq'); setMoreOpen(false); }} className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40">FAQ</a>
                 </div>
               )}
