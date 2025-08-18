@@ -482,11 +482,19 @@ const ToolUI = () => {
   const limitReached = !hasUnlimited && usageCount >= monthlyLimit;
 
   return (
-    <section id="toolUI" className="bg-muted/30">
-      <div className="container py-16 lg:py-20">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-3 text-foreground">Repurpose Content, Professionally</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">Paste text or upload a file. Select formats. Generate high-quality outputs fast.</p>
+    <section id="toolUI" className="bg-gradient-to-br from-[#FFF1E6] to-[#FDF7F2] py-20 lg:py-32">
+      <div className="container">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#E5DED7] rounded-full px-4 py-2 mb-6 shadow-sm">
+            <div className="w-2 h-2 bg-[#FF6B35] rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium text-[#2E2E2E]">Try it now • Free to start</span>
+          </div>
+          <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-[#2E2E2E]">
+            See the Magic in Action
+          </h2>
+          <p className="text-xl text-[#5A5A5A] max-w-2xl mx-auto">
+            Paste your content below and watch it transform into multiple platform-ready posts instantly.
+          </p>
         </div>
         <Card className="shadow-lg border bg-background">
           <CardHeader className="pb-8">
