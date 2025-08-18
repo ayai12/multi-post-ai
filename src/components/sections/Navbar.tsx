@@ -57,7 +57,6 @@ const Navbar = () => {
               {moreOpen && (
                 <div className="absolute right-0 mt-2 w-44 rounded-md border border-border bg-background shadow-sm py-1">
                   <a href="#use-cases" onClick={(e) => { scrollToId(e, 'use-cases'); setMoreOpen(false); }} className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40">Use cases</a>
-                  {/* <a href="#integrations" onClick={(e) => { scrollToId(e, 'integrations'); setMoreOpen(false); }} className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40">Integrations</a> */}
                   <a href="#faq" onClick={(e) => { scrollToId(e, 'faq'); setMoreOpen(false); }} className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/40">FAQ</a>
                 </div>
               )}
@@ -160,7 +159,6 @@ const Navbar = () => {
             <a href="#features" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2" onClick={(e) => { scrollToId(e, "features"); setMobileMenuOpen(false); }}>Features</a>
             <a href="#how-it-works" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2" onClick={(e) => { scrollToId(e, "how-it-works"); setMobileMenuOpen(false); }}>How it works</a>
             <a href="#use-cases" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2" onClick={(e) => { scrollToId(e, "use-cases"); setMobileMenuOpen(false); }}>Use cases</a>
-            <a href="#integrations" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2" onClick={(e) => { scrollToId(e, "integrations"); setMobileMenuOpen(false); }}>Integrations</a>
             <a href="#faq" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2" onClick={(e) => { scrollToId(e, "faq"); setMobileMenuOpen(false); }}>FAQ</a>
             <a
               href="#pricing"
