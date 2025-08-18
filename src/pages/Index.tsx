@@ -16,10 +16,10 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Content repurposing for creators | Repurpose newsletters, podcasts, blogs into 10+ posts</title>
+        <title>Turn Long‑Form Into 10+ Social Posts in Seconds | Repurpose</title>
         <meta
           name="description"
-          content="Content repurposing for creators: Repurpose blog posts into social media, turn scripts into tweets & LinkedIn posts, and repurpose newsletters for social. AI tool to repurpose content instantly—save time creating platform‑ready posts."
+          content="Repurpose your newsletters, podcasts and blogs into platform‑ready posts in seconds. Keep your voice, save hours each week, and stay consistent across X, LinkedIn and Instagram."
         />
         <meta
           name="keywords"

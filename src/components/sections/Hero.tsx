@@ -10,12 +10,21 @@ const Hero = () => {
               Social-Ready in Seconds · Preserve Your Voice
             </span>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-tight">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-tight">
             Turn One Newsletter, Podcast, or Blog Into 10+ Social Posts
-          </h1>
+          </h2>
           <p className="text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed text-center">
             Quick value prop: Repurpose turns your latest episode, issue, or article into platform‑ready posts in seconds. Keep your unique voice across Twitter/X, LinkedIn, Instagram and more. Your 24/7 personal copywriter—faster, affordable, and always on.
           </p>
+          {/* Lightweight internal links to improve site structure */}
+          <nav aria-label="Primary internal links" className="text-sm text-muted-foreground">
+            <ul className="flex flex-wrap items-center justify-center gap-3">
+              <li><a href="#features" className="hover:text-foreground underline-offset-4 hover:underline">Features</a></li>
+              <li><a href="#how-it-works" className="hover:text-foreground underline-offset-4 hover:underline">How it works</a></li>
+              <li><a href="#pricing" className="hover:text-foreground underline-offset-4 hover:underline">Pricing</a></li>
+              <li><a href="#faq" className="hover:text-foreground underline-offset-4 hover:underline">FAQ</a></li>
+            </ul>
+          </nav>
           <ul className="text-center grid gap-2 text-sm text-muted-foreground max-w-2xl mx-auto">
             <li>• Keep your unique voice while adapting length and style per platform</li>
             <li>• Save hours every week with platform‑aware formatting</li>
