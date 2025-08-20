@@ -5,42 +5,67 @@
     <loc>https://repurpose.cc/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <lastmod>2025-08-17</lastmod>
+    <lastmod>2025-08-20</lastmod>
   </url>
   <url>
     <loc>https://repurpose.cc/features</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <lastmod>2025-08-17</lastmod>
+    <lastmod>2025-08-20</lastmod>
   </url>
   <url>
     <loc>https://repurpose.cc/use-cases</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <lastmod>2025-08-17</lastmod>
+    <lastmod>2025-08-20</lastmod>
   </url>
   <url>
     <loc>https://repurpose.cc/how-it-works</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <lastmod>2025-08-17</lastmod>
+    <lastmod>2025-08-20</lastmod>
   </url>
   <url>
     <loc>https://repurpose.cc/case-studies</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
-    <lastmod>2025-08-17</lastmod>
+    <lastmod>2025-08-20</lastmod>
   </url>
   <url>
     <loc>https://repurpose.cc/alternatives</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
-    <lastmod>2025-08-17</lastmod>
+    <lastmod>2025-08-20</lastmod>
   </url>
   <url>
     <loc>https://repurpose.cc/pricing</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <lastmod>2025-08-17</lastmod>
+    <lastmod>2025-08-20</lastmod>
+  </url>
+  <!-- Blog -->
+  <url>
+    <loc>https://repurpose.cc/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2025-08-20</lastmod>
+  </url>
+  <url>
+    <loc>https://repurpose.cc/blog/repurpose-io-alternatives</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2025-08-20</lastmod>
+  </url>
+  <url>
+    <loc>https://repurpose.cc/blog/how-to-repurpose-content</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2025-08-20</lastmod>
+  </url>
+  <url>
+    <loc>https://repurpose.cc/blog/tools-for-creators-2025</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <lastmod>2025-08-20</lastmod>
   </url>
 </urlset>

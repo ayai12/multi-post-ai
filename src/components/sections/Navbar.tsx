@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link, useLocation } from "react-router-dom";
 import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
@@ -9,6 +10,8 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const { isSignedIn } = useUser();
+  const { pathname } = useLocation();
+  const isBlog = pathname.startsWith('/blog');
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 4);
@@ -45,6 +48,15 @@ const Navbar = () => {
             <a href="#how-it-works" onClick={(e) => scrollToId(e, "how-it-works")} className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent/40">
               How it works
             </a>
+            <Link
+              to="/blog"
+              aria-current={isBlog ? 'page' : undefined}
+              className={`text-sm transition-colors px-2 py-1 rounded-md hover:bg-accent/40 ${
+                isBlog ? 'text-foreground bg-accent/50' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Blog
+            </Link>
             <div className="relative">
               <button
                 className={`flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-accent/40 ${moreOpen ? 'bg-accent/50' : ''}`}
@@ -156,6 +168,7 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <div className="lg:hidden bg-background border-b border-border">
           <div className="container py-4 space-y-3">
+            <Link to="/blog" className={`block text-sm transition-colors py-2 ${isBlog ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`} onClick={() => setMobileMenuOpen(false)}>Blog</Link>
             <a href="#features" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2" onClick={(e) => { scrollToId(e, "features"); setMobileMenuOpen(false); }}>Features</a>
             <a href="#how-it-works" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2" onClick={(e) => { scrollToId(e, "how-it-works"); setMobileMenuOpen(false); }}>How it works</a>
             <a href="#use-cases" className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2" onClick={(e) => { scrollToId(e, "use-cases"); setMobileMenuOpen(false); }}>Use cases</a>
