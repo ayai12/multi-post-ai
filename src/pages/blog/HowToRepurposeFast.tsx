@@ -1,35 +1,31 @@
 import Navbar from "@/components/sections/Navbar";
 import Footer from "@/components/sections/Footer";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/seo/SEO";
+import { SITE, createBlogPostingJsonLd } from "@/lib/seo";
 import { Link } from "react-router-dom";
 
 const HowToRepurposeFast = () => {
   return (
     <>
-      <Helmet>
-        <title>How to Repurpose and Reuse Your Content in Seconds | Repurpose.cc</title>
-        <meta
-          name="description"
-          content="Learn step-by-step content repurposing to save time, reach new audiences, and boost SEO. Discover how Repurpose.cc helps you reuse content quickly across X, LinkedIn, and Instagram."
-        />
-        <meta
-          name="keywords"
-          content="content repurposing, reuse content quickly, repurpose content tool, creator productivity"
-        />
-        <link rel="canonical" href="https://repurpose.cc/blog/how-to-repurpose-content" />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Article",
+      <SEO
+        title="How to Repurpose and Reuse Your Content in Seconds | Repurpose.cc"
+        description="Learn step-by-step content repurposing to save time, reach new audiences, and boost SEO. Discover how Repurpose.cc helps you reuse content quickly across X, LinkedIn, and Instagram."
+        keywords={["content repurposing","reuse content quickly","repurpose content tool","creator productivity"]}
+        canonical={`${SITE.url}/blog/how-to-repurpose-content`}
+        og={{ type: "article", url: `${SITE.url}/blog/how-to-repurpose-content`, image: SITE.defaultImage, siteName: SITE.name }}
+        twitter={{ card: "summary_large_image", image: SITE.defaultImage, site: SITE.twitter, creator: SITE.twitter }}
+        jsonLd={[
+          createBlogPostingJsonLd({
             headline: "How to Repurpose and Reuse Your Content in Seconds",
             description:
               "Step-by-step guide to content repurposing to save time, reach new audiences, and boost SEO using Repurpose.cc.",
-            author: { "@type": "Organization", name: "Repurpose.cc" },
-            publisher: { "@type": "Organization", name: "Repurpose.cc" },
-            mainEntityOfPage: { "@type": "WebPage", "@id": "https://repurpose.cc/blog/how-to-repurpose-content" },
-          })}
-        </script>
-      </Helmet>
+            url: `${SITE.url}/blog/how-to-repurpose-content`,
+            datePublished: "2025-06-20",
+            image: SITE.defaultImage,
+            authorName: "Repurpose.cc Team",
+          }),
+        ]}
+      />
 
       <Navbar />
       <main className="min-h-screen bg-background">

@@ -3,7 +3,19 @@ import { SignUp, SignIn, useUser } from '@clerk/clerk-react'
 import { PricingTable } from '@clerk/react-router'
 
 export function meta(_: Route['MetaArgs']) {
-  return [{ title: 'Pricing' }]
+  return [
+    { title: 'Pricing | Repurpose.cc' },
+    {
+      name: 'description',
+      content:
+        'Simple, affordable pricing for Repurpose.cc — turn long‑form content into channel‑ready posts in seconds. Start free and scale as you grow.',
+    },
+    {
+      tagName: 'link',
+      rel: 'canonical',
+      href: 'https://repurpose.cc/pricing',
+    },
+  ]
 }
 
 export default function PricingPage() {

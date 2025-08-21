@@ -11,22 +11,47 @@ import Testimonials from "@/components/sections/Testimonials";
 import FAQSection from "@/components/sections/FAQSection";
 import Footer from "@/components/sections/Footer";
 import PricingPage from "@/app/Pricing/pricing";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/seo/SEO";
+import { SITE, createSoftwareAppJsonLd, createWebsiteJsonLd } from "@/lib/seo";
 const Index = () => {
   return (
     <>
-      <Helmet>
-        <title>Turn Long‑Form Into 10+ Social Posts in Seconds | Repurpose</title>
-        <meta
-          name="description"
-          content="Repurpose your newsletters, podcasts and blogs into platform‑ready posts in seconds. Keep your voice, save hours each week, and stay consistent across X, LinkedIn and Instagram."
-        />
-        <meta
-          name="keywords"
-          content="Content repurposing for creators, Repurpose blog posts into social media, Turn scripts into tweets and LinkedIn posts, AI tool to repurpose content instantly, Repurpose newsletters for social media, Save time creating platform-ready posts"
-        />
-        <link rel="canonical" href="https://repurpose.cc/" />
-      </Helmet>
+      <SEO
+        title="Repurpose.cc — Turn Blogs & Newsletters Into Social Posts with AI"
+        description="Convert long-form content into channel-ready social posts in seconds. Save time, stay consistent, and grow reach with Repurpose.cc."
+        keywords={[
+          "AI content repurposing tool",
+          "Repurpose content for social media",
+          "Automated social media posts",
+          "Blog to social media posts AI",
+          "Save time creating social media content",
+        ]}
+        canonical={`${SITE.url}/`}
+        og={{
+          type: "website",
+          title: "Repurpose.cc — Turn Blogs & Newsletters Into Social Posts with AI",
+          description:
+            "Convert long-form content into channel-ready social posts in seconds.",
+          url: SITE.url,
+          image: SITE.defaultImage,
+          siteName: SITE.name,
+        }}
+        twitter={{
+          card: "summary_large_image",
+          title: "Repurpose.cc — Turn Blogs & Newsletters Into Social Posts with AI",
+          description:
+            "Convert long-form content into channel-ready social posts in seconds.",
+          image: SITE.defaultImage,
+          site: SITE.twitter,
+          creator: SITE.twitter,
+        }}
+        jsonLd={[
+          createWebsiteJsonLd({ potentialAction: true }),
+          createSoftwareAppJsonLd({
+            offers: { price: "0", priceCurrency: "USD", url: `${SITE.url}/pricing` },
+          }),
+        ]}
+      />
       <Navbar />
       <main>
         <Hero />

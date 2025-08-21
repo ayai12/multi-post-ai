@@ -1,20 +1,20 @@
 import Navbar from "@/components/sections/Navbar";
 import Footer from "@/components/sections/Footer";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/seo/SEO";
+import { SITE } from "@/lib/seo";
 import { Link } from "react-router-dom";
 
 const Blog = () => {
   return (
     <>
-      <Helmet>
-        <title>Blog — Content Repurposing, Tools, and Strategies | Repurpose.cc</title>
-        <meta
-          name="description"
-          content="Read SEO-optimized guides on repurpose.io alternatives, how to repurpose content in seconds, and the best tools for solo creators. Learn how Repurpose.cc saves hours and scales your content."
-        />
-        <link rel="canonical" href="https://repurpose.cc/blog" />
-        <meta name="keywords" content="repurpose.io alternative, repurpose.io competitors, best repurposing tool, content repurposing, reuse content quickly, repurpose content tool, content marketing tools, AI content tools, tools for creators" />
-      </Helmet>
+      <SEO
+        title="Blog — Content Repurposing, Tools, and Strategies | Repurpose.cc"
+        description="Guides on repurpose.io alternatives, how to repurpose content fast, and the best tools for solo creators. Learn how Repurpose.cc saves hours and scales your content."
+        keywords={["repurpose.io alternative","repurpose.io competitors","best repurposing tool","content repurposing","AI content tools","tools for creators"]}
+        canonical={`${SITE.url}/blog`}
+        og={{ type: "website", url: `${SITE.url}/blog`, image: SITE.defaultImage, siteName: SITE.name }}
+        twitter={{ card: "summary_large_image", image: SITE.defaultImage, site: SITE.twitter, creator: SITE.twitter }}
+      />
 
       <Navbar />
       <main className="min-h-screen bg-background">

@@ -1,38 +1,31 @@
 import Navbar from "@/components/sections/Navbar";
 import Footer from "@/components/sections/Footer";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/seo/SEO";
+import { SITE, createBlogPostingJsonLd } from "@/lib/seo";
 import { Link } from "react-router-dom";
 
 const RepurposeIoAlternatives = () => {
   return (
     <>
-      <Helmet>
-        <title>Repurpose.io Alternatives (2025): Best Repurposing Tool for Creators | Repurpose.cc</title>
-        <meta
-          name="description"
-          content="Explore the top repurpose.io alternatives and competitors in 2025. Compare features, pricing, and ease of use. See why Repurpose.cc is the best lightweight, affordable repurposing tool for creators."
-        />
-        <meta
-          name="keywords"
-          content="repurpose.io alternative, repurpose.io competitors, best repurposing tool, content repurposing, creator tools"
-        />
-        <link rel="canonical" href="https://repurpose.cc/blog/repurpose-io-alternatives" />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Article",
+      <SEO
+        title="Repurpose.io Alternatives (2025): Best Repurposing Tool for Creators | Repurpose.cc"
+        description="Explore the top repurpose.io alternatives and competitors in 2025. Compare features, pricing, and ease of use. See why Repurpose.cc is the best lightweight, affordable repurposing tool for creators."
+        keywords={["repurpose.io alternative","repurpose.io competitors","best repurposing tool","content repurposing","creator tools"]}
+        canonical={`${SITE.url}/blog/repurpose-io-alternatives`}
+        og={{ type: "article", url: `${SITE.url}/blog/repurpose-io-alternatives`, image: SITE.defaultImage, siteName: SITE.name }}
+        twitter={{ card: "summary_large_image", image: SITE.defaultImage, site: SITE.twitter, creator: SITE.twitter }}
+        jsonLd={[
+          createBlogPostingJsonLd({
             headline: "Repurpose.io Alternatives: The Best Repurposing Tools for 2025",
             description:
               "Explore repurpose.io alternatives and competitors. Compare features, pricing, and ease of use. See why Repurpose.cc is best for creators.",
-            author: { "@type": "Organization", name: "Repurpose.cc" },
-            publisher: { "@type": "Organization", name: "Repurpose.cc" },
-            mainEntityOfPage: {
-              "@type": "WebPage",
-              "@id": "https://repurpose.cc/blog/repurpose-io-alternatives",
-            },
-          })}
-        </script>
-      </Helmet>
+            url: `${SITE.url}/blog/repurpose-io-alternatives`,
+            datePublished: "2025-07-15",
+            image: SITE.defaultImage,
+            authorName: "Repurpose.cc Team",
+          }),
+        ]}
+      />
 
       <Navbar />
       <main className="min-h-screen bg-background">

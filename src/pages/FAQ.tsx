@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, MessageCircle } from "lucide-react";
 import { useState } from "react";
+import SEO from "@/components/seo/SEO";
+import { SITE, createFAQPageJsonLd } from "@/lib/seo";
 
 const FAQ = () => {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
@@ -68,6 +70,19 @@ const FAQ = () => {
 
   return (
     <>
+      <SEO
+        title="FAQ | Repurpose.cc"
+        description="Answers about AI content repurposing, voice preservation, plans, data privacy, and workflows. Learn how Repurpose.cc converts long-form into platform-ready posts."
+        keywords={["AI content repurposing FAQ","repurpose content","privacy","plans","workflows"]}
+        canonical={`${SITE.url}/faq`}
+        og={{ type: "website", url: `${SITE.url}/faq`, image: SITE.defaultImage, siteName: SITE.name }}
+        twitter={{ card: "summary_large_image", image: SITE.defaultImage, site: SITE.twitter, creator: SITE.twitter }}
+        jsonLd={[
+          createFAQPageJsonLd(
+            faqs.map(f => ({ question: f.question, answer: f.answer }))
+          ),
+        ]}
+      />
       <Navbar />
       <main className="min-h-screen bg-background">
         {/* Hero Section */}

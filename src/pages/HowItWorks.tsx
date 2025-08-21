@@ -1,22 +1,30 @@
 import Footer from "@/components/sections/Footer";
 import Navbar from "@/components/sections/Navbar";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/seo/SEO";
+import { SITE, createHowToJsonLd } from "@/lib/seo";
 
 const HowItWorks = () => {
   return (
     <>
-      <Helmet>
-        <title>How it works | Content repurposing for creators</title>
-        <meta
-          name="description"
-          content="AI tool to repurpose content instantly: paste your newsletter, podcast or blog, choose platforms, and generate 10+ platform‑ready posts while preserving your voice. Save time creating platform‑ready posts."
-        />
-        <meta
-          name="keywords"
-          content="Content repurposing for creators, AI tool to repurpose content instantly, Repurpose newsletters for social media, Turn scripts into tweets and LinkedIn posts, Save time creating platform-ready posts"
-        />
-        <link rel="canonical" href="https://repurpose.cc/how-it-works" />
-      </Helmet>
+      <SEO
+        title="How It Works | Repurpose.cc"
+        description="Paste your newsletter, podcast, or blog. Choose platforms. Generate 10+ platform-ready posts while preserving your voice."
+        keywords={["AI content repurposing","how to repurpose content","repurpose blog to social"]}
+        canonical={`${SITE.url}/how-it-works`}
+        og={{ type: "website", url: `${SITE.url}/how-it-works`, image: SITE.defaultImage, siteName: SITE.name }}
+        twitter={{ card: "summary_large_image", image: SITE.defaultImage, site: SITE.twitter, creator: SITE.twitter }}
+        jsonLd={[
+          createHowToJsonLd({
+            name: "How to repurpose long-form content into social posts with Repurpose.cc",
+            description: "Three simple steps to convert blogs, newsletters, and transcripts into channel-native posts.",
+            steps: [
+              "Paste your content (blog, newsletter, transcript)",
+              "Choose platforms (X, LinkedIn, Instagram, etc.)",
+              "Generate 10+ posts and refine tone, then publish",
+            ],
+          }),
+        ]}
+      />
       <Navbar />
       <main className="container pt-24 pb-16 space-y-12">
         <header className="space-y-3 text-center">

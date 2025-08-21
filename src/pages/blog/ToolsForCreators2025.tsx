@@ -1,35 +1,31 @@
 import Navbar from "@/components/sections/Navbar";
 import Footer from "@/components/sections/Footer";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/seo/SEO";
+import { SITE, createBlogPostingJsonLd } from "@/lib/seo";
 import { Link } from "react-router-dom";
 
 const ToolsForCreators2025 = () => {
   return (
     <>
-      <Helmet>
-        <title>Best Tools for Solo Creators to Scale Content in 2025 | Repurpose.cc</title>
-        <meta
-          name="description"
-          content="Discover the essential content marketing tools and AI content tools for solo creators in 2025. Build a lean stack that helps you produce more with less—featuring Repurpose.cc."
-        />
-        <meta
-          name="keywords"
-          content="content marketing tools, AI content tools, tools for creators, solo creator stack"
-        />
-        <link rel="canonical" href="https://repurpose.cc/blog/tools-for-creators-2025" />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Article",
+      <SEO
+        title="Best Tools for Solo Creators to Scale Content in 2025 | Repurpose.cc"
+        description="Discover the essential content marketing tools and AI content tools for solo creators in 2025. Build a lean stack that helps you produce more with less—featuring Repurpose.cc."
+        keywords={["content marketing tools","AI content tools","tools for creators","solo creator stack"]}
+        canonical={`${SITE.url}/blog/tools-for-creators-2025`}
+        og={{ type: "article", url: `${SITE.url}/blog/tools-for-creators-2025`, image: SITE.defaultImage, siteName: SITE.name }}
+        twitter={{ card: "summary_large_image", image: SITE.defaultImage, site: SITE.twitter, creator: SITE.twitter }}
+        jsonLd={[
+          createBlogPostingJsonLd({
             headline: "Best Tools for Solo Creators to Scale Content in 2025",
             description:
               "Essential content marketing tools and AI content tools for solo creators in 2025, featuring Repurpose.cc.",
-            author: { "@type": "Organization", name: "Repurpose.cc" },
-            publisher: { "@type": "Organization", name: "Repurpose.cc" },
-            mainEntityOfPage: { "@type": "WebPage", "@id": "https://repurpose.cc/blog/tools-for-creators-2025" },
-          })}
-        </script>
-      </Helmet>
+            url: `${SITE.url}/blog/tools-for-creators-2025`,
+            datePublished: "2025-07-30",
+            image: SITE.defaultImage,
+            authorName: "Repurpose.cc Team",
+          }),
+        ]}
+      />
 
       <Navbar />
       <main className="min-h-screen bg-background">

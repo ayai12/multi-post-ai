@@ -1,22 +1,19 @@
 import Footer from "@/components/sections/Footer";
 import Navbar from "@/components/sections/Navbar";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/seo/SEO";
+import { SITE } from "@/lib/seo";
 
 const Alternatives = () => {
   return (
     <>
-      <Helmet>
-        <title>Alternatives | Content repurposing for creators</title>
-        <meta
-          name="description"
-          content="Compare alternatives for content repurposing for creators. Repurpose blog posts into social media, turn scripts into tweets & LinkedIn posts, and repurpose newsletters for social—AI tool to repurpose content instantly."
-        />
-        <meta
-          name="keywords"
-          content="Content repurposing for creators, Repurpose blog posts into social media, Turn scripts into tweets and LinkedIn posts, AI tool to repurpose content instantly, Repurpose newsletters for social media, Save time creating platform-ready posts"
-        />
-        <link rel="canonical" href="https://repurpose.cc/alternatives" />
-      </Helmet>
+      <SEO
+        title="Repurpose.cc Alternatives — Compare Repurposing Tools"
+        description="Compare repurposing tools and see how Repurpose.cc stacks up on speed, voice preservation, and price. Find the best fit for creators and small teams."
+        keywords={["repurpose.io alternative","repurposing tools","content repurposing","creator tools"]}
+        canonical={`${SITE.url}/alternatives`}
+        og={{ type: "website", url: `${SITE.url}/alternatives`, image: SITE.defaultImage, siteName: SITE.name }}
+        twitter={{ card: "summary_large_image", image: SITE.defaultImage, site: SITE.twitter, creator: SITE.twitter }}
+      />
       <Navbar />
       <main className="container pt-24 pb-16 space-y-12">
         <header className="space-y-3 text-center">

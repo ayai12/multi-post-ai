@@ -1,22 +1,25 @@
 import Footer from "@/components/sections/Footer";
 import Navbar from "@/components/sections/Navbar";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/seo/SEO";
+import { SITE } from "@/lib/seo";
 
 const UseCases = () => {
   return (
     <>
-      <Helmet>
-        <title>Use cases | Content repurposing for creators</title>
-        <meta
-          name="description"
-          content="Repurpose blog posts into social media, turn scripts into tweets & LinkedIn posts, and repurpose newsletters for social media. See how creators save time creating platform‑ready posts."
-        />
-        <meta
-          name="keywords"
-          content="Content repurposing for creators, Repurpose blog posts into social media, Turn scripts into tweets and LinkedIn posts, Repurpose newsletters for social media, Save time creating platform-ready posts"
-        />
-        <link rel="canonical" href="https://repurpose.cc/use-cases" />
-      </Helmet>
+      <SEO
+        title="Use cases | Content repurposing for creators"
+        description="Repurpose blog posts into social media, turn scripts into tweets & LinkedIn posts, and repurpose newsletters for social media. See how creators save time creating platform‑ready posts."
+        keywords={[
+          "Content repurposing for creators",
+          "Repurpose blog posts into social media",
+          "Turn scripts into tweets and LinkedIn posts",
+          "Repurpose newsletters for social media",
+          "Save time creating platform-ready posts",
+        ]}
+        canonical={`${SITE.url}/use-cases`}
+        og={{ type: "website", url: `${SITE.url}/use-cases`, image: SITE.defaultImage, siteName: SITE.name }}
+        twitter={{ card: "summary_large_image", image: SITE.defaultImage, site: SITE.twitter, creator: SITE.twitter }}
+      />
       <Navbar />
       <main className="container pt-24 pb-16 space-y-12">
         <header className="space-y-3 text-center">

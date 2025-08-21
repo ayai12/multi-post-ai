@@ -1,5 +1,7 @@
 import Navbar from "@/components/sections/Navbar";
 import Footer from "@/components/sections/Footer";
+import SEO from "@/components/seo/SEO";
+import { SITE } from "@/lib/seo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Twitter, Zap, Heart, Code } from "lucide-react";
@@ -7,6 +9,14 @@ import { Twitter, Zap, Heart, Code } from "lucide-react";
 const About = () => {
   return (
     <>
+      <SEO
+        title="About | Built by a solo developer for creators | Repurpose.cc"
+        description="The story behind Repurpose.cc — a lightweight, affordable repurposing tool built by a solo developer for creators who want to ship more in less time."
+        keywords={["about repurpose.cc","solo developer","creator-first","content repurposing tool"]}
+        canonical={`${SITE.url}/about`}
+        og={{ type: "website", url: `${SITE.url}/about`, image: SITE.defaultImage, siteName: SITE.name }}
+        twitter={{ card: "summary_large_image", image: SITE.defaultImage, site: SITE.twitter, creator: SITE.twitter }}
+      />
       <Navbar />
       <main className="min-h-screen bg-background">
         {/* Hero Section */}

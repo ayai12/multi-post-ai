@@ -1,22 +1,23 @@
 import Footer from "@/components/sections/Footer";
 import Navbar from "@/components/sections/Navbar";
-import { Helmet } from "react-helmet-async";
+import SEO from "@/components/seo/SEO";
+import { SITE } from "@/lib/seo";
 
 const Features = () => {
   return (
     <>
-      <Helmet>
-        <title>Features | Content repurposing for creators</title>
-        <meta
-          name="description"
-          content="Purpose-built features for content repurposing for creators. Repurpose blog posts into social media, turn scripts into tweets & LinkedIn posts, and repurpose newsletters for social—while preserving your voice."
-        />
-        <meta
-          name="keywords"
-          content="Content repurposing for creators, Repurpose blog posts into social media, Turn scripts into tweets and LinkedIn posts, Repurpose newsletters for social media, Save time creating platform-ready posts"
-        />
-        <link rel="canonical" href="https://repurpose.cc/features" />
-      </Helmet>
+      <SEO
+        title="Features | Repurpose.cc"
+        description="Purpose-built features to turn blogs, newsletters and transcripts into platform-ready threads, carousels and captions—while preserving your voice."
+        keywords={[
+          "AI content repurposing tool",
+          "Repurpose content for social media",
+          "Blog to social media posts AI",
+        ]}
+        canonical={`${SITE.url}/features`}
+        og={{ type: "website", url: `${SITE.url}/features`, image: SITE.defaultImage, siteName: SITE.name }}
+        twitter={{ card: "summary_large_image", image: SITE.defaultImage, site: SITE.twitter, creator: SITE.twitter }}
+      />
       <Navbar />
       <main className="container pt-24 pb-16 space-y-12">
         <header className="space-y-3 text-center">
